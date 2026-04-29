@@ -6,12 +6,12 @@
 
 ## 📦 Projects
 
-| # | Project | Domain | Core Skill | Dataset |
-|---|---------|--------|------------|---------|
-| 1 | [RAG Policy Advisor](./01-rag-policy-advisor/) | Regulatory / Research | Retrieval-Augmented Generation | UK Gov + arXiv |
-| 2 | [RAG Evaluator](./02-rag-evaluator/) | Quality Assurance | LLM Evaluation Pipelines | Custom QA (from P1) |
-| 3 | [Receipt Fine-tuner](./03-receipt-finetuner/) | Document AI | Supervised Fine-tuning | SROIE (HuggingFace) |
-| 4 | [Email Triage Agent](./04-email-triage-agent/) | Enterprise Ops | Autonomous Agents | Enron Email (Kaggle) |
+| # | Project | Domain | Core Skill | Dataset | Live API |
+|---|---------|--------|------------|---------|----------|
+| 1 | [RAG Policy Advisor](./01-rag-policy-advisor/) | Regulatory / Research | Retrieval-Augmented Generation | UK Gov + arXiv | [Swagger UI](https://rag-gdzc.onrender.com/docs) |
+| 2 | [RAG Evaluator](./02-rag-evaluator/) | Quality Assurance | LLM Evaluation Pipelines | Custom QA (from P1) | Local / Docker |
+| 3 | [Receipt Fine-tuner](./03-receipt-finetuner/) | Document AI | Supervised Fine-tuning | SROIE (HuggingFace) | Local / Docker |
+| 4 | [Email Triage Agent](./04-email-triage-agent/) | Enterprise Ops | Autonomous Agents | Enron Email (Kaggle) | [Swagger UI](https://email-x1cn.onrender.com/docs) |
 
 ---
 

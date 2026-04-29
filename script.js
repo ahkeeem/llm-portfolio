@@ -1,4 +1,4 @@
-const API_BASE = "http://127.0.0.1:8000";
+const API_BASE = "https://email-x1cn.onrender.com";
 
 // === API Status Check ===
 async function checkApiStatus() {
