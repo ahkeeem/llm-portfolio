@@ -13,8 +13,14 @@ RAG systems can hallucinate, miss relevant sources, or give vague answers. Witho
 An evaluation pipeline that:
 1. **Generates** 30-50 QA pairs from Project 1's document corpus (LLM + manual verification)
 2. **Runs** each question through the RAG system
-3. **Scores** answers on faithfulness, relevancy, context precision, and correctness
+3. **Scores** answers using an "LLM-as-a-Judge" layer measuring faithfulness, relevancy, context precision, and correctness
 4. **Reports** aggregate metrics with per-question drill-down
+
+### The "Evaluation-First" Loop
+Automated metrics are useless if they don't correlate with human judgment. We validate the reliability of the **LLM-as-a-Judge** by:
+1. Creating a gold-standard baseline of human-labeled QA pairs.
+2. Running the RAGAS evaluator against this dataset.
+3. Measuring the alignment between the automated scores and human labels. If the LLM judge hallucinates high scores for bad answers, the evaluation prompt is iterated and version-controlled until it aligns with human intuition.
 
 ## 🧑‍🔬 Control (Human-in-the-Loop)
 

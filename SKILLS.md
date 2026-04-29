@@ -10,12 +10,12 @@
 
 | Skill | Level | Demonstrated In | Evidence |
 |-------|-------|-----------------|----------|
-| Prompt Engineering | Expert | All Projects | Multi-step prompts, JSON-constrained output |
+| Prompt Engineering | Expert | All Projects | Prompt Versioning, JSON-constrained output |
 | RAG Architecture | Expert | Project 1 | Chunking, embedding, retrieval, generation pipeline |
 | LLM Evaluation | Advanced | Project 2 | RAGAS metrics, custom QA benchmarking |
 | Fine-tuning (LoRA/PEFT) | Advanced | Project 3 | Parameter-efficient tuning on domain data |
-| Agent Design | Advanced | Project 4 | Multi-step reasoning, tool use, approval gates |
-| Token Optimization | Expert | All Projects | Budget-conscious architecture across all systems |
+| Agent Design | Advanced | Project 4 | Stateful Logic (LangGraph), approval gates |
+| Token Optimization | Expert | All Projects | Semantic Caching, Budget-conscious architecture |
 
 ### 🏗️ System Design
 
@@ -32,6 +32,7 @@
 | Skill | Level | Demonstrated In | Evidence |
 |-------|-------|-----------------|----------|
 | Dataset Curation | Advanced | Projects 1, 2 | Real-world data selection, QA pair generation |
+| Data Synthesis | Expert | Project 2 | Generating synthetic QA pairs for training/eval |
 | Document Processing | Advanced | Projects 1, 3 | PDF/receipt parsing, structured extraction |
 | Model Selection | Expert | All Projects | Cost/performance tradeoff analysis |
 | Evaluation Metrics | Advanced | Projects 2, 3 | Faithfulness, relevancy, F1, exact match |
@@ -82,13 +83,13 @@ Senior LLM Engineer | RAG · Agents · Fine-tuning · Evaluation
 
 ### Overview (Suggested)
 ```
-I build production-grade LLM systems with human-in-the-loop controls.
+I specialize in moving LLM prototypes from 'Unpredictable Chatbots' to 'Observable Enterprise Systems' with a focus on ROI and Data Sovereignty.
 
 My portfolio includes:
 ✅ RAG systems over real regulatory documents (UK Gov + arXiv)
 ✅ Custom evaluation pipelines with RAGAS metrics
-✅ Fine-tuned models for document extraction (LoRA/PEFT)
-✅ Autonomous email triage agents with approval gates
+✅ Edge-AI pipelines (OCR + Local SLMs) for 100% data privacy
+✅ Autonomous email triage agents with LangGraph & approval gates
 
 Every system I build is:
 → Cost-optimized (token budgets under $6/month)

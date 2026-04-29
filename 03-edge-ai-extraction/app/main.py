@@ -4,8 +4,8 @@ from pydantic import BaseModel
 from core.inference import extract_receipt_fields
 
 app = FastAPI(
-    title="Receipt Fine-tuner",
-    description="Extract structured data from receipt text using a fine-tuned model.",
+    title="Edge-AI Extraction Pipeline",
+    description="Offline OCR and SLM data extraction for 100% data privacy and 0ms latency.",
     version="1.0.0",
 )
 

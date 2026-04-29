@@ -149,13 +149,13 @@
                         <span class="card-number">03</span>
                         <span class="card-status">Architecture Ready</span>
                     </div>
-                    <div class="card-icon">🧾</div>
-                    <h3 class="card-title">Receipt Fine-tuner</h3>
-                    <p class="card-desc">Parameter-efficient LoRA fine-tuning for structured data extraction from receipts — company, date, address, total.</p>
+                    <div class="card-icon">🛡️</div>
+                    <h3 class="card-title">Edge-AI Extraction Pipeline</h3>
+                    <p class="card-desc">Offline OCR and Small Language Model (SLM) pipeline running on local edge hardware for 100% data privacy and 0ms latency.</p>
                     <div class="card-tech">
-                        <span class="tech-tag">LoRA / PEFT</span>
-                        <span class="tech-tag">Phi-3-mini</span>
-                        <span class="tech-tag">4-bit Quant</span>
+                        <span class="tech-tag">Local OCR</span>
+                        <span class="tech-tag">Phi-3-mini (SLM)</span>
+                        <span class="tech-tag">Edge AI</span>
                     </div>
                     <div class="card-meta">
                         <div class="meta-item">
@@ -222,7 +222,7 @@
             <div class="demo-tabs">
                 <button class="tab-btn" id="tab-rag" onclick="switchDemo('rag')">🧠 RAG Advisor</button>
                 <button class="tab-btn" id="tab-evaluator" onclick="switchDemo('evaluator')">📊 RAG Evaluator</button>
-                <button class="tab-btn" id="tab-receipt" onclick="switchDemo('receipt')">🧾 Receipt Extractor</button>
+                <button class="tab-btn" id="tab-receipt" onclick="switchDemo('receipt')">🛡️ Edge-AI Extraction</button>
                 <button class="tab-btn active" id="tab-email" onclick="switchDemo('email')">✉️ Email Agent</button>
             </div>
 
@@ -493,7 +493,7 @@ Example: Dear support team, I've been waiting 3 weeks for my refund of $450. Thi
                 <div class="demo-step" id="receiptStep1">
                     <div class="step-header">
                         <div class="step-badge">Step 1</div>
-                        <h3>Extract Receipt Data</h3>
+                        <h3>Edge-AI Document Extraction</h3>
                     </div>
                     <div class="demo-input-area">
                         <textarea id="receiptInput" class="demo-textarea" style="min-height: 150px; font-family: var(--mono);" placeholder="Paste raw receipt text here..."></textarea>

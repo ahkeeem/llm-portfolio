@@ -10,9 +10,10 @@ Enterprise teams waste hours manually triaging inbound emails — classifying ur
 
 ## 💡 Solution
 
-A 2-step LLM agent that:
+A **Stateful Agent** that:
 1. **Classifies** emails by priority (urgent/normal/low) and type (complaint/request/info)
 2. **Drafts** a professional response based on the classification
+3. **Iterates** based on human feedback using a state-management framework (like LangGraph). If a draft is rejected, the agent revises it based on specific feedback rather than restarting the entire pipeline.
 
 All responses require **human approval** before sending — no black-box automation.
 
@@ -113,22 +114,26 @@ docker run -p 8000:8000 --env-file .env email-triage-agent
 
 ## 🏗️ Architecture
 
-```
+**Stateful Agent Graph (LangGraph-inspired)**
+
+```text
 Email Text
     │
-    ├──▶ LLM Call 1: classify_prompt()
-    │         │
-    │         ▼
-    │    { "priority": "urgent", "type": "complaint" }
+    ▼
+[ Node: Classify ] ──────────────┐
+    │                            │
+    ▼                            │
+[ Node: Draft ] ◄────────┐       │ state: { email, class, draft, feedback }
+    │                    │       │
+    ▼                    │       │
+[ Gate: Human Review ]   │       │
+    │                    │       │
+    ├── Rejected (Feedback) ─────┘
     │
-    └──▶ LLM Call 2: response_prompt(email, classification)
-              │
-              ▼
-         "Dear customer, we apologize for..."
-              │
-              ▼
-         requires_approval: true  ◄── HUMAN GATE
+    └── Approved ──▶ [ Action: Send ]
 ```
+
+Unlike standard sequential chains, this stateful architecture allows the agent to iteratively refine its output based on specific human feedback without losing the context of prior turns.
 
 ---
 

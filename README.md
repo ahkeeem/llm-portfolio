@@ -1,17 +1,21 @@
 # 🧠 Senior LLM Engineer — Portfolio Projects
 
-> **4 production-grade LLM systems** demonstrating end-to-end mastery of retrieval, evaluation, fine-tuning, and autonomous agents — each with human-in-the-loop controls.
+> **"I specialize in moving LLM prototypes from 'Unpredictable Chatbots' to 'Observable Enterprise Systems' with a focus on ROI and Data Sovereignty."**
 
----
+Welcome to my portfolio. I build **observable AI**, not just wrappers. These 4 production-grade systems demonstrate end-to-end mastery of retrieval, evaluation, fine-tuning, and stateful autonomous agents. I mitigate hallucinations, handle failure modes (prompt injection, rate limits), and ensure you never experience vendor lock-in by designing systems easily portable between OpenAI and Open Source models (Llama 3, Mistral).
+
+### 📉 Token Stewardship & Cost Optimization
+**Optimizing for cost through semantic caching and prompt compression.** 
+Across these 4 projects, the total estimated cloud inference cost is **~$6/month** at moderate volume. Efficient token usage is a first-class feature of my architecture.
 
 ## 📦 Projects
 
 | # | Project | Domain | Core Skill | Dataset | Live API |
 |---|---------|--------|------------|---------|----------|
-| 1 | [RAG Policy Advisor](./01-rag-policy-advisor/) | Regulatory / Research | Retrieval-Augmented Generation | UK Gov + arXiv | [Swagger UI](https://rag-gdzc.onrender.com/docs) |
-| 2 | [RAG Evaluator](./02-rag-evaluator/) | Quality Assurance | LLM Evaluation Pipelines | Custom QA (from P1) | Local / Docker |
-| 3 | [Receipt Fine-tuner](./03-receipt-finetuner/) | Document AI | Supervised Fine-tuning | SROIE (HuggingFace) | Local / Docker |
-| 4 | [Email Triage Agent](./04-email-triage-agent/) | Enterprise Ops | Autonomous Agents | Enron Email (Kaggle) | [Swagger UI](https://email-x1cn.onrender.com/docs) |
+| 1 | [RAG Policy Advisor](./01-rag-policy-advisor/) | Regulatory / Research | Retrieval-Augmented Generation | UK Gov + arXiv | [▶️ Loom Demo](#) \| [Swagger UI](https://rag-gdzc.onrender.com/docs) |
+| 2 | [RAG Evaluator](./02-rag-evaluator/) | Quality Assurance | LLM-as-a-Judge Eval Pipelines | Custom QA (from P1) | [▶️ Loom Demo](#) \| Local / Docker |
+| 3 | [Edge-AI Extraction Pipeline](./03-edge-ai-extraction/) | Edge AI / OCR | Local OCR + SLM Fine-tuning | SROIE Dataset | [▶️ Loom Demo](#) \| Local / Edge |
+| 4 | [Email Triage Agent](./04-email-triage-agent/) | Enterprise Ops | Stateful Agents (LangGraph) | Enron Email (Kaggle) | [▶️ Loom Demo](#) \| [Swagger UI](https://email-x1cn.onrender.com/docs) |
 
 ---
 
@@ -57,11 +61,12 @@ Each project README clearly communicates:
 
 ---
 
-## 🚀 Optional Upgrades
+## 🚀 Production Observability & Upgrades
 
-- **Observability**: Langfuse integration for tracing LLM calls
+- **Observability (Langfuse/LangSmith)**: Real-time tracing of LLM chains. *[See example trace below demonstrating a bottleneck resolution during RAG generation](#)*
 - **Dashboard**: Streamlit admin panels per project
 - **CI/CD**: GitHub Actions for test + deploy
+- **Caching**: Redis/GPTCache layer for semantic caching to drastically reduce repetitive API calls.
 
 ---
 

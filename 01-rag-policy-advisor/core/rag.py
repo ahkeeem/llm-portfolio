@@ -27,7 +27,8 @@ def query_rag(question: str, top_k: int = 5) -> dict:
         context_chunks.append(f"[{i+1}] {result['text']}")
         sources.append({
             "chunk_id": i + 1,
-            "source": result.get("metadata", {}).get("source", "unknown"),
+            "metadata": result.get("metadata", {}),
+            "content": result.get("text", ""),
             "score": result.get("score", 0.0),
         })
 

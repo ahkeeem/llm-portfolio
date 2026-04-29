@@ -1,19 +1,25 @@
-# 🧾 Project 3 — Receipt Fine-tuner
+# 🛡️ Project 3 — Edge-AI Extraction Pipeline
 
-> Parameter-efficient fine-tuning (LoRA) for structured data extraction from receipt images/text.
+> Local OCR and Small Language Model (SLM) extraction pipeline running entirely on edge hardware for 100% data privacy and 0ms network latency.
 
 ---
 
 ## 🎯 Problem
 
-Extracting structured data (merchant, date, total, items) from receipts is tedious and error-prone when done manually. Generic LLMs lack the domain precision needed for consistent field extraction.
+Enterprise data often contains highly sensitive PII or proprietary financial information (like receipts, invoices, and KYC documents). Sending this data to cloud APIs (like OpenAI) violates data sovereignty requirements and introduces unpredictable network latency.
 
 ## 💡 Solution
 
-A fine-tuned model that:
-1. **Trains** on the SROIE receipt extraction dataset using LoRA/PEFT
-2. **Extracts** structured JSON from receipt text (merchant, date, address, total)
-3. **Serves** predictions via a FastAPI endpoint
+A secure, edge-deployed pipeline that:
+1. **Digitizes** documents offline using local OCR
+2. **Extracts** structured JSON using a Small Language Model (SLM like Phi-3-mini) fine-tuned with LoRA/PEFT
+3. **Serves** predictions via a local FastAPI endpoint running directly on the client's hardware
+
+### Why Edge-AI instead of Cloud APIs?
+For high-volume structured data extraction, standard cloud APIs are a liability. By deploying an OCR + SLM pipeline on the edge, we achieve:
+- **100% Data Privacy:** No sensitive data ever leaves the local network. Perfect for healthcare (HIPAA) or finance (SOC2).
+- **0ms Network Latency:** Eliminates the network round-trip time associated with cloud APIs.
+- **Zero API Costs:** Processing 10,000 documents a day with a local, 4-bit quantized SLM eliminates per-token API costs entirely.
 
 ## 🧑‍🔬 Control (Human-in-the-Loop)
 
@@ -36,7 +42,7 @@ A fine-tuned model that:
 ## 📁 Structure
 
 ```
-03-receipt-finetuner/
+03-edge-ai-extraction/
 ├── app/
 │   ├── __init__.py
 │   └── main.py              # FastAPI inference endpoint
@@ -67,7 +73,7 @@ A fine-tuned model that:
 
 ### 1. Setup
 ```bash
-cd 03-receipt-finetuner
+cd 03-edge-ai-extraction
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env
