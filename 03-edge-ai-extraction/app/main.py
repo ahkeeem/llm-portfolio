@@ -1,12 +1,15 @@
-from fastapi import FastAPI
+import io
+from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from core.inference import extract_receipt_fields
+from fastapi.responses import JSONResponse
+import base64
+from PIL import Image
+from core.vision import processor_engine
 
 app = FastAPI(
-    title="Edge-AI Extraction Pipeline",
-    description="Offline OCR and SLM data extraction for 100% data privacy and 0ms latency.",
-    version="1.0.0",
+    title="Automated Compliance Gateway",
+    description="Edge-AI Local-First Pipeline for OCR Extraction, Redaction, and Human-in-the-Loop clearance.",
+    version="2.0.0",
 )
 
 app.add_middleware(
@@ -17,40 +20,34 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-class ReceiptRequest(BaseModel):
-    receipt_text: str
-
-
-class ReviewRequest(BaseModel):
-    receipt_text: str
-    predicted: dict
-    corrected: dict  # Human-corrected fields
-
-
 @app.get("/health")
 def health():
     return {"status": "ok"}
 
-
-@app.post("/extract")
-def extract(req: ReceiptRequest):
+@app.post("/process-document")
+async def process_document(file: UploadFile = File(...)):
     """
-    Extract structured fields from receipt text.
-    Returns company, date, address, total.
+    Accepts a raw document image (FUNSD format), runs local LayoutLMv3 spatial extraction,
+    applies pixel-level redaction over PII (answers), and returns a sanitized JSON.
     """
-    result = extract_receipt_fields(req.receipt_text)
-    return result
-
-
-@app.post("/review")
-def review(req: ReviewRequest):
-    """
-    Human-in-the-loop: submit corrections for a prediction.
-    In production, this would feed back into the training pipeline.
-    """
-    return {
-        "status": "correction_logged",
-        "predicted": req.predicted,
-        "corrected": req.corrected,
-    }
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(400, "File must be an image")
+        
+    contents = await file.read()
+    image = Image.open(io.BytesIO(contents)).convert("RGB")
+    
+    # Run the Local-First Pipeline (Modules A, B, C)
+    sanitized_json, redacted_img, requires_review = processor_engine.process_document(image)
+    
+    # Convert redacted image to base64 for easy API consumption
+    buffered = io.BytesIO()
+    redacted_img.save(buffered, format="JPEG")
+    img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
+    
+    # The JSON Schema Generator
+    return JSONResponse({
+        "status": "success",
+        "human_review_required": requires_review,
+        "structured_data": sanitized_json,
+        "redacted_image_base64": img_str
+    })

@@ -1,12 +1,10 @@
 fastapi
 uvicorn
-openai
-pydantic
-python-dotenv
+python-multipart
 transformers
-peft
 datasets
 torch
-bitsandbytes
-accelerate
-langfuse
+torchvision
+opencv-python
+pillow
+pydantic
