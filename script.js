@@ -1,21 +1,22 @@
 const API_URLS = {
     email: "https://email-x1cn.onrender.com",
     rag: "https://rag-gdzc.onrender.com",
-    receipt: "http://127.0.0.1:8000" // Change this when Receipt is deployed to Render
+    evaluator: "http://127.0.0.1:8001", // Change when deployed
+    receipt: "http://127.0.0.1:8002" // Change when deployed
 };
 // === API Status Check ===
 async function checkApiStatus() {
     const dot = document.getElementById("apiStatus");
     const text = document.getElementById("apiStatusText");
     try {
-        const res = await fetch(`${API_BASE}/health`, { signal: AbortSignal.timeout(3000) });
+        const res = await fetch(`${API_URLS.email}/health`, { signal: AbortSignal.timeout(3000) });
         if (res.ok) {
             dot.className = "status-dot online";
-            text.textContent = "API Online";
+            text.textContent = "APIs Online";
         } else { throw new Error(); }
     } catch {
         dot.className = "status-dot offline";
-        text.textContent = "API Offline";
+        text.textContent = "APIs Offline";
     }
 }
 setInterval(checkApiStatus, 10000);
@@ -79,6 +80,11 @@ async function processEmail() {
         document.getElementById("typeBadge").textContent = type;
         document.getElementById("rawClassification").textContent = classification;
         document.getElementById("draftResponse").textContent = data.response;
+
+        // Update Privacy Badge
+        const privBadge = document.getElementById("privacyBadge");
+        privBadge.textContent = data.privacy_scan || "PASSED";
+        privBadge.style.color = (data.privacy_scan && data.privacy_scan.includes("FLAGGED")) ? "var(--accent-red)" : "var(--accent-green)";
 
         const flag = document.getElementById("approvalFlag");
         flag.textContent = "⏳ Requires Approval";
@@ -170,13 +176,23 @@ function switchDemo(type) {
 }
 
 // === RAG Demo ===
+const ragSamples = {
+    ai_policy: "What are the key principles of the UK's AI regulation policy?",
+    data_protection: "How does the AI framework intersect with existing GDPR and data protection laws?",
+    compute: "What is the government's strategy regarding AI compute infrastructure?"
+};
+
+function loadRagSample(type) {
+    document.getElementById("ragInput").value = ragSamples[type];
+}
+
 async function processRag() {
     const question = document.getElementById("ragInput").value.trim();
     if (!question) return;
 
     document.getElementById("processRagBtn").disabled = true;
     document.getElementById("ragLoading").style.display = "block";
-    document.getElementById("ragResults").style.display = "none";
+    document.getElementById("ragStep2").style.display = "none";
     document.getElementById("ragError").style.display = "none";
 
     try {
@@ -189,10 +205,30 @@ async function processRag() {
         const data = await res.json();
 
         document.getElementById("ragLoading").style.display = "none";
-        document.getElementById("ragResults").style.display = "block";
+        document.getElementById("ragStep2").style.display = "block";
         
         document.getElementById("ragAnswer").textContent = data.answer;
-        document.getElementById("ragSources").textContent = JSON.stringify(data.sources, null, 2);
+        
+        // Render sources nicely
+        const sourcesHtml = (data.sources || []).map((src, index) => `
+            <div class="result-card" style="padding: 16px;">
+                <div class="result-header" style="margin-bottom: 8px;">
+                    <span class="result-icon">📄</span>
+                    <h4 style="font-size: 0.9rem; margin: 0;">Source ${index + 1}: ${src.metadata?.source || 'Unknown'}</h4>
+                </div>
+                <div class="result-body">
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px;">Page/Section: ${src.metadata?.page || src.metadata?.section || 'N/A'}</p>
+                    <div style="font-size: 0.8rem; color: var(--text-secondary); background: var(--bg-primary); padding: 12px; border-radius: 6px; border: 1px solid var(--border);">
+                        "${src.content ? src.content.substring(0, 150) : ''}${src.content && src.content.length > 150 ? '...' : ''}"
+                    </div>
+                </div>
+            </div>
+        `).join('');
+        document.getElementById("ragSourcesGrid").innerHTML = sourcesHtml || '<p style="color: var(--text-muted); font-size: 0.9rem;">No sources returned.</p>';
+
+        document.getElementById("ragStep3").style.display = "block";
+        document.getElementById("ragFinalStatus").style.display = "none";
+        document.getElementById("ragStep2").scrollIntoView({ behavior: "smooth", block: "start" });
 
     } catch (err) {
         document.getElementById("ragLoading").style.display = "none";
@@ -200,6 +236,85 @@ async function processRag() {
         document.getElementById("ragErrorMessage").textContent = err.message;
     }
     document.getElementById("processRagBtn").disabled = false;
+}
+
+async function feedbackRag(isAccurate) {
+    const question = document.getElementById("ragInput").value.trim();
+    const answer = document.getElementById("ragAnswer").textContent;
+    
+    document.getElementById("ragStep3").style.display = "none";
+    const final = document.getElementById("ragFinalStatus");
+    final.style.display = "block";
+
+    if (isAccurate) {
+        document.getElementById("ragFinalIcon").textContent = "✅";
+        document.getElementById("ragFinalMessage").textContent = "Feedback Recorded: Accurate";
+        document.getElementById("ragFinalDetail").textContent = "Thank you! This QA pair will be added to the positive evaluation dataset.";
+    } else {
+        try {
+            await fetch(`${API_URLS.rag}/flag`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ question, answer, reason: "bad_answer" })
+            });
+        } catch(e) {
+            console.error("Failed to flag:", e);
+        }
+        document.getElementById("ragFinalIcon").textContent = "🚩";
+        document.getElementById("ragFinalMessage").textContent = "Answer Flagged for Review";
+        document.getElementById("ragFinalDetail").textContent = "This query and context have been flagged. The retrieval chunking strategy will be reviewed.";
+    }
+}
+
+function resetRagDemo() {
+    document.getElementById("ragInput").value = "";
+    document.getElementById("ragStep2").style.display = "none";
+    document.getElementById("ragLoading").style.display = "none";
+    document.getElementById("ragError").style.display = "none";
+    document.getElementById("ragStep1").scrollIntoView({ behavior: "smooth" });
+}
+
+// === Evaluator Demo ===
+async function processEval() {
+    const endpoint = document.getElementById("evalEndpoint").value.trim();
+    if (!endpoint) return;
+
+    document.getElementById("processEvalBtn").disabled = true;
+    document.getElementById("evalLoading").style.display = "block";
+    document.getElementById("evalResults").style.display = "none";
+    document.getElementById("evalError").style.display = "none";
+
+    try {
+        const res = await fetch(`${API_URLS.evaluator}/evaluate`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ rag_endpoint: endpoint })
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        document.getElementById("evalLoading").style.display = "none";
+        document.getElementById("evalResults").style.display = "block";
+        
+        let scoresHtml = '';
+        if (data.aggregate_scores) {
+            scoresHtml = Object.entries(data.aggregate_scores).map(([key, value]) => `
+                <div class="class-badge">
+                    <span class="class-label">${key.replace('_', ' ')}</span>
+                    <span class="class-value ${value >= 0.85 ? 'low' : (value >= 0.7 ? 'normal' : 'urgent')}">${(value * 100).toFixed(1)}%</span>
+                </div>
+            `).join('');
+        }
+        document.getElementById("evalScores").innerHTML = scoresHtml || '<p>No aggregate scores available</p>';
+
+        document.getElementById("evalFlagged").textContent = JSON.stringify(data.flagged_items || [], null, 2);
+
+    } catch (err) {
+        document.getElementById("evalLoading").style.display = "none";
+        document.getElementById("evalError").style.display = "block";
+        document.getElementById("evalErrorMessage").textContent = err.message;
+    }
+    document.getElementById("processEvalBtn").disabled = false;
 }
 
 // === Receipt Demo ===
@@ -213,7 +328,7 @@ async function processReceipt() {
 
     document.getElementById("processReceiptBtn").disabled = true;
     document.getElementById("receiptLoading").style.display = "block";
-    document.getElementById("receiptResults").style.display = "none";
+    document.getElementById("receiptStep2").style.display = "none";
     document.getElementById("receiptError").style.display = "none";
 
     try {
@@ -225,10 +340,22 @@ async function processReceipt() {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
 
+        window.currentReceiptPrediction = data;
+
         document.getElementById("receiptLoading").style.display = "none";
-        document.getElementById("receiptResults").style.display = "block";
+        document.getElementById("receiptStep2").style.display = "block";
         
-        document.getElementById("receiptJson").textContent = JSON.stringify(data, null, 2);
+        let fieldsHtml = Object.entries(data).map(([key, value]) => `
+            <div class="class-badge" style="flex-basis: 45%; margin-bottom: 12px;">
+                <span class="class-label">${key}</span>
+                <span class="class-value">${value}</span>
+            </div>
+        `).join('');
+        document.getElementById("receiptFields").innerHTML = fieldsHtml || '<p>No data extracted</p>';
+
+        document.getElementById("receiptStep3").style.display = "block";
+        document.getElementById("receiptFinalStatus").style.display = "none";
+        document.getElementById("receiptStep2").scrollIntoView({ behavior: "smooth", block: "start" });
 
     } catch (err) {
         document.getElementById("receiptLoading").style.display = "none";
@@ -236,4 +363,40 @@ async function processReceipt() {
         document.getElementById("receiptErrorMessage").textContent = err.message;
     }
     document.getElementById("processReceiptBtn").disabled = false;
+}
+
+async function feedbackReceipt(isCorrect) {
+    document.getElementById("receiptStep3").style.display = "none";
+    const final = document.getElementById("receiptFinalStatus");
+    final.style.display = "block";
+
+    if (isCorrect) {
+        document.getElementById("receiptFinalIcon").textContent = "✅";
+        document.getElementById("receiptFinalMessage").textContent = "Extraction Verified";
+        document.getElementById("receiptFinalDetail").textContent = "This receipt was processed successfully and will be used as a positive ground-truth label.";
+    } else {
+        const receipt_text = document.getElementById("receiptInput").value.trim();
+        try {
+            await fetch(`${API_URLS.receipt}/review`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ 
+                    receipt_text, 
+                    predicted: window.currentReceiptPrediction || {}, 
+                    corrected: {} 
+                })
+            });
+        } catch(e) { console.error(e); }
+        document.getElementById("receiptFinalIcon").textContent = "🔄";
+        document.getElementById("receiptFinalMessage").textContent = "Flagged for Re-training";
+        document.getElementById("receiptFinalDetail").textContent = "This sample has been sent to the correction queue. The LoRA fine-tuning pipeline will use it in the next epoch.";
+    }
+}
+
+function resetReceiptDemo() {
+    document.getElementById("receiptInput").value = "";
+    document.getElementById("receiptStep2").style.display = "none";
+    document.getElementById("receiptLoading").style.display = "none";
+    document.getElementById("receiptError").style.display = "none";
+    document.getElementById("receiptStep1").scrollIntoView({ behavior: "smooth" });
 }

@@ -82,10 +82,11 @@ code { font-family: var(--mono); font-size: 0.85em; background: rgba(79,143,255,
 
 /* === PROJECT CARDS === */
 .projects-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
-.project-card { position: relative; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 32px; overflow: hidden; transition: all .3s cubic-bezier(0.4, 0, 0.2, 1); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); }
-.project-card:hover { border-color: rgba(59, 130, 246, 0.5); transform: translateY(-6px); background: var(--bg-card-hover); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2); }
-.card-active { border-color: rgba(245,158,11,.4); }
-.card-glow { position: absolute; top: -50%; right: -50%; width: 200px; height: 200px; border-radius: 50%; filter: blur(80px); opacity: .15; pointer-events: none; }
+.project-card { position: relative; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 32px; overflow: hidden; transition: all .4s cubic-bezier(0.175, 0.885, 0.32, 1.275); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); }
+.project-card:hover { border-color: rgba(59, 130, 246, 0.5); transform: translateY(-8px) scale(1.02); background: var(--bg-card-hover); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3); }
+.card-active { border-color: rgba(245,158,11,.5); box-shadow: 0 0 20px rgba(245, 158, 11, 0.1); }
+.card-glow { position: absolute; top: -50%; right: -50%; width: 200px; height: 200px; border-radius: 50%; filter: blur(80px); opacity: .15; pointer-events: none; transition: opacity 0.5s ease, transform 0.5s ease; }
+.project-card:hover .card-glow { opacity: .4; transform: scale(1.3); }
 .card-glow-blue { background: var(--accent-blue); }
 .card-glow-purple { background: var(--accent-purple); }
 .card-glow-green { background: var(--accent-green); }
@@ -113,7 +114,7 @@ code { font-family: var(--mono); font-size: 0.85em; background: rgba(79,143,255,
 .demo-tabs { display: flex; justify-content: center; gap: 12px; margin-bottom: 32px; flex-wrap: wrap; }
 .tab-btn { padding: 10px 24px; border-radius: 20px; font-weight: 600; font-size: .95rem; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-secondary); transition: all .2s; }
 .tab-btn:hover { color: var(--text-primary); border-color: rgba(79,143,255,.3); }
-.tab-btn.active { background: var(--gradient-main); color: #fff; border-color: transparent; }
+.tab-btn.active { background: var(--gradient-main); color: #fff; border-color: transparent; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.35); transform: translateY(-2px); }
 .demo-step { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 32px; margin-bottom: 24px; }
 .step-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
 .step-badge { padding: 4px 12px; border-radius: 6px; font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; background: var(--gradient-main); color: #fff; }
@@ -150,6 +151,10 @@ code { font-family: var(--mono); font-size: 0.85em; background: rgba(79,143,255,
 .class-value.urgent { color: var(--accent-red); }
 .class-value.normal { color: var(--accent-blue); }
 .class-value.low { color: var(--accent-green); }
+.system-context-tag { font-size: .8rem; color: var(--text-secondary); background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); padding: 8px 12px; border-radius: 8px; margin-bottom: 12px; display: inline-flex; align-items: center; gap: 6px; }
+.header-actions { display: flex; align-items: center; gap: 16px; }
+.integration-link { font-size: .75rem; color: var(--accent-blue); text-decoration: underline; font-weight: 600; }
+.integration-link:hover { color: var(--text-primary); }
 .raw-json { font-family: var(--mono); font-size: .8rem; color: var(--text-muted); background: var(--bg-card); padding: 12px; border-radius: 6px; overflow-x: auto; white-space: pre-wrap; }
 .draft-text { font-size: .95rem; line-height: 1.7; color: var(--text-secondary); white-space: pre-wrap; }
 
