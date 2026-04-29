@@ -213,11 +213,17 @@
         <div class="container">
             <div class="section-header">
                 <span class="section-tag">Interactive</span>
-                <h2 class="section-title">Live Demo — Email Triage Agent</h2>
-                <p class="section-subtitle">Send a real email to the AI agent. Watch it classify, draft a response, and wait for your approval.</p>
+                <h2 class="section-title">Live Interactive Demos</h2>
+                <p class="section-subtitle">Test the autonomous agent, query the RAG system, or extract data from receipts directly from your browser.</p>
             </div>
 
-            <div class="demo-container">
+            <div class="demo-tabs">
+                <button class="tab-btn active" id="tab-email" onclick="switchDemo('email')">✉️ Email Agent</button>
+                <button class="tab-btn" id="tab-rag" onclick="switchDemo('rag')">🧠 RAG Advisor</button>
+                <button class="tab-btn" id="tab-receipt" onclick="switchDemo('receipt')">🧾 Receipt Extractor</button>
+            </div>
+
+            <div class="demo-container" id="demo-email">
                 <!-- Step 1: Input -->
                 <div class="demo-step" id="step1">
                     <div class="step-header">
@@ -323,6 +329,88 @@ Example: Dear support team, I've been waiting 3 weeks for my refund of $450. Thi
                     <button class="btn btn-secondary" onclick="resetDemo()">Try Again</button>
                 </div>
             </div>
+
+            <!-- RAG Demo -->
+            <div class="demo-container" id="demo-rag" style="display:none;">
+                <div class="demo-step">
+                    <div class="step-header">
+                        <div class="step-badge">Ask a Policy Question</div>
+                        <h3>RAG Policy Advisor</h3>
+                    </div>
+                    <div class="demo-input-area">
+                        <textarea id="ragInput" class="demo-textarea" style="min-height: 100px;" placeholder="e.g. What are the key principles of the UK's AI regulation policy?"></textarea>
+                        <button class="btn btn-primary btn-large" id="processRagBtn" onclick="processRag()">
+                            <span class="btn-icon">🔍</span> Search Knowledge Base
+                        </button>
+                    </div>
+                </div>
+
+                <div class="demo-loading" id="ragLoading" style="display:none;">
+                    <div class="loader"></div>
+                    <p>Searching Vector Database...</p>
+                </div>
+
+                <div class="demo-step" id="ragResults" style="display:none;">
+                    <div class="step-header">
+                        <div class="step-badge">Generated Answer</div>
+                    </div>
+                    <div class="result-card result-card-large">
+                        <div class="result-body">
+                            <div class="draft-text" id="ragAnswer"></div>
+                        </div>
+                    </div>
+                    <div class="step-header" style="margin-top:20px;">
+                        <div class="step-badge" style="background:var(--accent-blue)">Sources Used</div>
+                    </div>
+                    <div class="result-card">
+                        <pre class="raw-json" id="ragSources"></pre>
+                    </div>
+                </div>
+                <div class="demo-error" id="ragError" style="display:none;">
+                    <span class="error-icon">⚠️</span>
+                    <h3>Connection Error</h3>
+                    <p id="ragErrorMessage"></p>
+                </div>
+            </div>
+
+            <!-- Receipt Demo -->
+            <div class="demo-container" id="demo-receipt" style="display:none;">
+                <div class="demo-step">
+                    <div class="step-header">
+                        <div class="step-badge">Extract Receipt Data</div>
+                        <h3>Receipt Fine-tuner</h3>
+                    </div>
+                    <div class="demo-input-area">
+                        <textarea id="receiptInput" class="demo-textarea" placeholder="Paste raw receipt text here..."></textarea>
+                        <div class="demo-samples">
+                            <button class="sample-btn" onclick="loadReceiptSample()">Load Example</button>
+                        </div>
+                        <button class="btn btn-primary btn-large" id="processReceiptBtn" onclick="processReceipt()">
+                            <span class="btn-icon">🧾</span> Extract JSON
+                        </button>
+                    </div>
+                </div>
+
+                <div class="demo-loading" id="receiptLoading" style="display:none;">
+                    <div class="loader"></div>
+                    <p>Running local fine-tuned model...</p>
+                </div>
+
+                <div class="demo-step" id="receiptResults" style="display:none;">
+                    <div class="step-header">
+                        <div class="step-badge">Structured Output</div>
+                    </div>
+                    <div class="result-card">
+                        <pre class="raw-json" id="receiptJson"></pre>
+                    </div>
+                </div>
+                <div class="demo-error" id="receiptError" style="display:none;">
+                    <span class="error-icon">⚠️</span>
+                    <h3>Connection Error</h3>
+                    <p id="receiptErrorMessage"></p>
+                </div>
+            </div>
+
         </div>
     </section>
 

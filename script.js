@@ -1,5 +1,8 @@
-const API_BASE = "https://email-x1cn.onrender.com";
-
+const API_URLS = {
+    email: "https://email-x1cn.onrender.com",
+    rag: "https://rag-gdzc.onrender.com",
+    receipt: "http://127.0.0.1:8000" // Change this when Receipt is deployed to Render
+};
 // === API Status Check ===
 async function checkApiStatus() {
     const dot = document.getElementById("apiStatus");
@@ -45,7 +48,7 @@ async function processEmail() {
     document.getElementById("demoError").style.display = "none";
 
     try {
-        const res = await fetch(`${API_BASE}/process`, {
+        const res = await fetch(`${API_URLS.email}/process`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email_text: emailText })
@@ -100,7 +103,7 @@ async function approveEmail(approved) {
     const emailText = document.getElementById("emailInput").value.trim();
 
     try {
-        const res = await fetch(`${API_BASE}/approve`, {
+        const res = await fetch(`${API_URLS.email}/approve`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email_text: emailText, approved })
@@ -152,3 +155,85 @@ const observer = new IntersectionObserver((entries) => {
 }, { threshold: 0.2 });
 
 document.querySelectorAll(".skill-group").forEach(el => observer.observe(el));
+
+// === Tab Switching ===
+function switchDemo(type) {
+    // Update tabs
+    document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+    document.getElementById(`tab-${type}`).classList.add("active");
+
+    // Hide all containers
+    document.querySelectorAll(".demo-container").forEach(c => c.style.display = "none");
+    
+    // Show selected
+    document.getElementById(`demo-${type}`).style.display = "block";
+}
+
+// === RAG Demo ===
+async function processRag() {
+    const question = document.getElementById("ragInput").value.trim();
+    if (!question) return;
+
+    document.getElementById("processRagBtn").disabled = true;
+    document.getElementById("ragLoading").style.display = "block";
+    document.getElementById("ragResults").style.display = "none";
+    document.getElementById("ragError").style.display = "none";
+
+    try {
+        const res = await fetch(`${API_URLS.rag}/query`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ question })
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        document.getElementById("ragLoading").style.display = "none";
+        document.getElementById("ragResults").style.display = "block";
+        
+        document.getElementById("ragAnswer").textContent = data.answer;
+        document.getElementById("ragSources").textContent = JSON.stringify(data.sources, null, 2);
+
+    } catch (err) {
+        document.getElementById("ragLoading").style.display = "none";
+        document.getElementById("ragError").style.display = "block";
+        document.getElementById("ragErrorMessage").textContent = err.message;
+    }
+    document.getElementById("processRagBtn").disabled = false;
+}
+
+// === Receipt Demo ===
+function loadReceiptSample() {
+    document.getElementById("receiptInput").value = "WHOLE FOODS MARKET - STORE #10402\n2345 BRYANT ST, SAN FRANCISCO, CA 94110\n05/15/2026 14:30\n\nORGANIC APPLES          $4.99\nALMOND MILK             $3.50\nWHOLE WHEAT BREAD       $2.99\n\nTOTAL DUE:              $11.48";
+}
+
+async function processReceipt() {
+    const receipt_text = document.getElementById("receiptInput").value.trim();
+    if (!receipt_text) return;
+
+    document.getElementById("processReceiptBtn").disabled = true;
+    document.getElementById("receiptLoading").style.display = "block";
+    document.getElementById("receiptResults").style.display = "none";
+    document.getElementById("receiptError").style.display = "none";
+
+    try {
+        const res = await fetch(`${API_URLS.receipt}/extract`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ receipt_text })
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        document.getElementById("receiptLoading").style.display = "none";
+        document.getElementById("receiptResults").style.display = "block";
+        
+        document.getElementById("receiptJson").textContent = JSON.stringify(data, null, 2);
+
+    } catch (err) {
+        document.getElementById("receiptLoading").style.display = "none";
+        document.getElementById("receiptError").style.display = "block";
+        document.getElementById("receiptErrorMessage").textContent = err.message;
+    }
+    document.getElementById("processReceiptBtn").disabled = false;
+}

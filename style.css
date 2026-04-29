@@ -110,6 +110,10 @@ code { font-family: var(--mono); font-size: 0.85em; background: rgba(79,143,255,
 
 /* === DEMO === */
 .demo-container { max-width: 800px; margin: 0 auto; }
+.demo-tabs { display: flex; justify-content: center; gap: 12px; margin-bottom: 32px; flex-wrap: wrap; }
+.tab-btn { padding: 10px 24px; border-radius: 20px; font-weight: 600; font-size: .95rem; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-secondary); transition: all .2s; }
+.tab-btn:hover { color: var(--text-primary); border-color: rgba(79,143,255,.3); }
+.tab-btn.active { background: var(--gradient-main); color: #fff; border-color: transparent; }
 .demo-step { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 32px; margin-bottom: 24px; }
 .step-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
 .step-badge { padding: 4px 12px; border-radius: 6px; font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; background: var(--gradient-main); color: #fff; }
