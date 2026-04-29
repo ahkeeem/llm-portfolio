@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Senior LLM Engineer — Portfolio Demo</title>
+    <meta name="description" content="Production-grade LLM systems: RAG, Evaluation, Fine-tuning, and Autonomous Agents with human-in-the-loop controls.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav class="nav" id="nav">
+        <div class="nav-inner">
+            <a href="#hero" class="nav-logo">
+                <span class="logo-icon">◆</span> LLM Portfolio
+            </a>
+            <div class="nav-links">
+                <a href="#projects">Projects</a>
+                <a href="#demo">Live Demo</a>
+                <a href="#architecture">Architecture</a>
+                <a href="#skills">Skills</a>
+            </div>
+            <div class="nav-status">
+                <span class="status-dot" id="apiStatus"></span>
+                <span class="status-text" id="apiStatusText">Checking...</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="hero">
+        <div class="hero-bg"></div>
+        <div class="hero-content">
+            <div class="hero-badge">Senior LLM Engineer</div>
+            <h1 class="hero-title">
+                Production-Grade<br>
+                <span class="gradient-text">LLM Systems</span>
+            </h1>
+            <p class="hero-subtitle">
+                4 end-to-end projects demonstrating RAG, Evaluation, Fine-tuning, and Autonomous Agents — each with human-in-the-loop controls and cost-optimized architecture.
+            </p>
+            <div class="hero-stats">
+                <div class="stat">
+                    <span class="stat-value">4</span>
+                    <span class="stat-label">Projects</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value">~$5</span>
+                    <span class="stat-label">/mo Total Cost</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value">100%</span>
+                    <span class="stat-label">Human-in-Loop</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value">Docker</span>
+                    <span class="stat-label">Ready</span>
+                </div>
+            </div>
+            <div class="hero-actions">
+                <a href="#demo" class="btn btn-primary">Try Live Demo</a>
+                <a href="#projects" class="btn btn-secondary">View Projects</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Projects Section -->
+    <section class="section" id="projects">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Portfolio</span>
+                <h2 class="section-title">Four Pillars of LLM Engineering</h2>
+                <p class="section-subtitle">Each project solves a real-world problem with observable, controllable AI systems.</p>
+            </div>
+            <div class="projects-grid">
+
+                <!-- Project 1 -->
+                <div class="project-card" data-project="1">
+                    <div class="card-glow card-glow-blue"></div>
+                    <div class="card-header">
+                        <span class="card-number">01</span>
+                        <span class="card-status">Architecture Ready</span>
+                    </div>
+                    <div class="card-icon">🧠</div>
+                    <h3 class="card-title">RAG Policy Advisor</h3>
+                    <p class="card-desc">Retrieval-Augmented Generation over UK Government policy documents and arXiv research papers with source-cited answers.</p>
+                    <div class="card-tech">
+                        <span class="tech-tag">ChromaDB</span>
+                        <span class="tech-tag">Embeddings</span>
+                        <span class="tech-tag">LangChain</span>
+                    </div>
+                    <div class="card-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">Dataset</span>
+                            <span class="meta-value">UK Gov + arXiv</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Cost/Query</span>
+                            <span class="meta-value">~1,500 tokens</span>
+                        </div>
+                    </div>
+                    <div class="card-hitl">
+                        <span class="hitl-icon">👤</span>
+                        <span>Human flags bad answers → improves chunking/prompts</span>
+                    </div>
+                </div>
+
+                <!-- Project 2 -->
+                <div class="project-card" data-project="2">
+                    <div class="card-glow card-glow-purple"></div>
+                    <div class="card-header">
+                        <span class="card-number">02</span>
+                        <span class="card-status">Architecture Ready</span>
+                    </div>
+                    <div class="card-icon">📊</div>
+                    <h3 class="card-title">RAG Evaluator</h3>
+                    <p class="card-desc">Custom evaluation pipeline measuring faithfulness, relevancy, and correctness using LLM-as-judge on human-verified QA pairs.</p>
+                    <div class="card-tech">
+                        <span class="tech-tag">RAGAS</span>
+                        <span class="tech-tag">LLM-as-Judge</span>
+                        <span class="tech-tag">Metrics</span>
+                    </div>
+                    <div class="card-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">Dataset</span>
+                            <span class="meta-value">Custom QA (from P1)</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Target</span>
+                            <span class="meta-value">>0.85 Faithfulness</span>
+                        </div>
+                    </div>
+                    <div class="card-hitl">
+                        <span class="hitl-icon">👤</span>
+                        <span>Human verifies ground truth labels + reviews low scores</span>
+                    </div>
+                </div>
+
+                <!-- Project 3 -->
+                <div class="project-card" data-project="3">
+                    <div class="card-glow card-glow-green"></div>
+                    <div class="card-header">
+                        <span class="card-number">03</span>
+                        <span class="card-status">Architecture Ready</span>
+                    </div>
+                    <div class="card-icon">🧾</div>
+                    <h3 class="card-title">Receipt Fine-tuner</h3>
+                    <p class="card-desc">Parameter-efficient LoRA fine-tuning for structured data extraction from receipts — company, date, address, total.</p>
+                    <div class="card-tech">
+                        <span class="tech-tag">LoRA / PEFT</span>
+                        <span class="tech-tag">Phi-3-mini</span>
+                        <span class="tech-tag">4-bit Quant</span>
+                    </div>
+                    <div class="card-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">Dataset</span>
+                            <span class="meta-value">SROIE (HuggingFace)</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Target F1</span>
+                            <span class="meta-value">>0.90</span>
+                        </div>
+                    </div>
+                    <div class="card-hitl">
+                        <span class="hitl-icon">👤</span>
+                        <span>Human cleans training labels + reviews low-confidence outputs</span>
+                    </div>
+                </div>
+
+                <!-- Project 4 -->
+                <div class="project-card card-active" data-project="4">
+                    <div class="card-glow card-glow-orange"></div>
+                    <div class="card-header">
+                        <span class="card-number">04</span>
+                        <span class="card-status card-live">● Live Demo</span>
+                    </div>
+                    <div class="card-icon">🤖</div>
+                    <h3 class="card-title">Email Triage Agent</h3>
+                    <p class="card-desc">Autonomous 2-step agent: classify email priority/type, then draft a professional response — all gated by human approval.</p>
+                    <div class="card-tech">
+                        <span class="tech-tag">Groq</span>
+                        <span class="tech-tag">Llama 3.1</span>
+                        <span class="tech-tag">FastAPI</span>
+                    </div>
+                    <div class="card-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">Dataset</span>
+                            <span class="meta-value">Enron Email (Kaggle)</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Cost/Email</span>
+                            <span class="meta-value">~1,250 tokens</span>
+                        </div>
+                    </div>
+                    <div class="card-hitl">
+                        <span class="hitl-icon">👤</span>
+                        <span><code>requires_approval: true</code> — human reviews before send</span>
+                    </div>
+                    <a href="#demo" class="card-cta">Try it Live →</a>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Live Demo Section -->
+    <section class="section section-dark" id="demo">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Interactive</span>
+                <h2 class="section-title">Live Demo — Email Triage Agent</h2>
+                <p class="section-subtitle">Send a real email to the AI agent. Watch it classify, draft a response, and wait for your approval.</p>
+            </div>
+
+            <div class="demo-container">
+                <!-- Step 1: Input -->
+                <div class="demo-step" id="step1">
+                    <div class="step-header">
+                        <div class="step-badge">Step 1</div>
+                        <h3>Submit Email</h3>
+                    </div>
+                    <div class="demo-input-area">
+                        <textarea id="emailInput" class="demo-textarea" placeholder="Paste or type an email here...
+
+Example: Dear support team, I've been waiting 3 weeks for my refund of $450. This is completely unacceptable. I need this resolved immediately or I will have to escalate this matter further."></textarea>
+                        <div class="demo-samples">
+                            <span class="sample-label">Quick samples:</span>
+                            <button class="sample-btn" onclick="loadSample('complaint')">Complaint</button>
+                            <button class="sample-btn" onclick="loadSample('request')">Request</button>
+                            <button class="sample-btn" onclick="loadSample('info')">Info</button>
+                        </div>
+                        <button class="btn btn-primary btn-large" id="processBtn" onclick="processEmail()">
+                            <span class="btn-icon">▶</span> Process Email
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Loading -->
+                <div class="demo-loading" id="demoLoading" style="display:none;">
+                    <div class="loader"></div>
+                    <p>Agent is thinking...</p>
+                    <span class="loading-detail">Classifying → Drafting response</span>
+                </div>
+
+                <!-- Step 2: Results -->
+                <div class="demo-step" id="step2" style="display:none;">
+                    <div class="step-header">
+                        <div class="step-badge">Step 2</div>
+                        <h3>Agent Output</h3>
+                    </div>
+
+                    <div class="results-grid">
+                        <!-- Classification -->
+                        <div class="result-card">
+                            <div class="result-header">
+                                <span class="result-icon">🏷️</span>
+                                <h4>Classification</h4>
+                            </div>
+                            <div class="result-body" id="classificationResult">
+                                <div class="classification-badges">
+                                    <div class="class-badge">
+                                        <span class="class-label">Priority</span>
+                                        <span class="class-value" id="priorityBadge">—</span>
+                                    </div>
+                                    <div class="class-badge">
+                                        <span class="class-label">Type</span>
+                                        <span class="class-value" id="typeBadge">—</span>
+                                    </div>
+                                </div>
+                                <pre class="raw-json" id="rawClassification"></pre>
+                            </div>
+                        </div>
+
+                        <!-- Draft Response -->
+                        <div class="result-card result-card-large">
+                            <div class="result-header">
+                                <span class="result-icon">✉️</span>
+                                <h4>Draft Response</h4>
+                                <span class="approval-flag" id="approvalFlag">⏳ Requires Approval</span>
+                            </div>
+                            <div class="result-body">
+                                <div class="draft-text" id="draftResponse"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Approval -->
+                    <div class="approval-section" id="step3">
+                        <div class="step-header">
+                            <div class="step-badge step-badge-warning">Step 3</div>
+                            <h3>Human-in-the-Loop Decision</h3>
+                        </div>
+                        <div class="approval-actions">
+                            <button class="btn btn-approve" onclick="approveEmail(true)">
+                                ✓ Approve & Send
+                            </button>
+                            <button class="btn btn-reject" onclick="approveEmail(false)">
+                                ✗ Reject & Archive
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Final Status -->
+                    <div class="final-status" id="finalStatus" style="display:none;">
+                        <div class="status-icon" id="finalIcon"></div>
+                        <h3 id="finalMessage"></h3>
+                        <p id="finalDetail"></p>
+                        <button class="btn btn-secondary" onclick="resetDemo()">Process Another Email</button>
+                    </div>
+                </div>
+
+                <!-- Error -->
+                <div class="demo-error" id="demoError" style="display:none;">
+                    <span class="error-icon">⚠️</span>
+                    <h3>Connection Error</h3>
+                    <p id="errorMessage"></p>
+                    <p class="error-hint">Make sure the API server is running:<br><code>uvicorn app.main:app --reload</code></p>
+                    <button class="btn btn-secondary" onclick="resetDemo()">Try Again</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Architecture Section -->
+    <section class="section" id="architecture">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">System Design</span>
+                <h2 class="section-title">Architecture Overview</h2>
+                <p class="section-subtitle">Every project follows a consistent, production-ready pattern.</p>
+            </div>
+
+            <div class="arch-grid">
+                <div class="arch-card">
+                    <h4>📁 Consistent Structure</h4>
+                    <pre class="arch-code">project_name/
+├── app/          <span class="code-comment"># FastAPI endpoints</span>
+├── core/         <span class="code-comment"># Business logic</span>
+├── data/         <span class="code-comment"># Raw + processed</span>
+├── scripts/      <span class="code-comment"># Ingestion / training</span>
+├── tests/        <span class="code-comment"># Unit + integration</span>
+├── Dockerfile    <span class="code-comment"># Container-ready</span>
+├── requirements.txt
+└── README.md</pre>
+                </div>
+
+                <div class="arch-card">
+                    <h4>🔄 Agent Pipeline (P4)</h4>
+                    <pre class="arch-code">Email Text
+  │
+  ├─▶ <span class="code-highlight">LLM Call 1</span>: classify
+  │       │
+  │       ▼
+  │   { priority, type }
+  │
+  └─▶ <span class="code-highlight">LLM Call 2</span>: draft
+          │
+          ▼
+     Draft Response
+          │
+          ▼
+  <span class="code-warning">requires_approval: true</span></pre>
+                </div>
+
+                <div class="arch-card">
+                    <h4>💰 Token Budget</h4>
+                    <div class="budget-table">
+                        <div class="budget-row">
+                            <span>RAG Advisor</span>
+                            <span class="budget-value">~1,500 tok</span>
+                        </div>
+                        <div class="budget-row">
+                            <span>Evaluator</span>
+                            <span class="budget-value">~1,500 tok</span>
+                        </div>
+                        <div class="budget-row">
+                            <span>Fine-tuner</span>
+                            <span class="budget-value">~400 tok</span>
+                        </div>
+                        <div class="budget-row">
+                            <span>Agent</span>
+                            <span class="budget-value">~1,250 tok</span>
+                        </div>
+                        <div class="budget-row budget-total">
+                            <span>Monthly Total</span>
+                            <span class="budget-value">~$5.23</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="arch-card">
+                    <h4>🛡️ Cross-Cutting Concerns</h4>
+                    <div class="concern-list">
+                        <div class="concern-item">
+                            <span class="concern-icon">🔍</span>
+                            <div>
+                                <strong>Observability</strong>
+                                <span>Langfuse tracing per LLM call</span>
+                            </div>
+                        </div>
+                        <div class="concern-item">
+                            <span class="concern-icon">🔒</span>
+                            <div>
+                                <strong>Security</strong>
+                                <span>.env secrets, input sanitization</span>
+                            </div>
+                        </div>
+                        <div class="concern-item">
+                            <span class="concern-icon">🔁</span>
+                            <div>
+                                <strong>Error Handling</strong>
+                                <span>Retry with exponential backoff</span>
+                            </div>
+                        </div>
+                        <div class="concern-item">
+                            <span class="concern-icon">🐳</span>
+                            <div>
+                                <strong>Deployment</strong>
+                                <span>Docker + Uvicorn per project</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Skills Section -->
+    <section class="section section-dark" id="skills">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Expertise</span>
+                <h2 class="section-title">Technical Skills</h2>
+            </div>
+            <div class="skills-grid">
+                <div class="skill-group">
+                    <h4>🧠 LLM Engineering</h4>
+                    <div class="skill-bars">
+                        <div class="skill-bar"><span class="skill-name">Prompt Engineering</span><div class="bar"><div class="bar-fill" style="width:95%"></div></div></div>
+                        <div class="skill-bar"><span class="skill-name">RAG Architecture</span><div class="bar"><div class="bar-fill" style="width:92%"></div></div></div>
+                        <div class="skill-bar"><span class="skill-name">LLM Evaluation</span><div class="bar"><div class="bar-fill" style="width:85%"></div></div></div>
+                        <div class="skill-bar"><span class="skill-name">Fine-tuning (LoRA)</span><div class="bar"><div class="bar-fill" style="width:82%"></div></div></div>
+                        <div class="skill-bar"><span class="skill-name">Agent Design</span><div class="bar"><div class="bar-fill" style="width:88%"></div></div></div>
+                    </div>
+                </div>
+                <div class="skill-group">
+                    <h4>🏗️ System Design</h4>
+                    <div class="skill-bars">
+                        <div class="skill-bar"><span class="skill-name">FastAPI / Python</span><div class="bar"><div class="bar-fill" style="width:95%"></div></div></div>
+                        <div class="skill-bar"><span class="skill-name">Vector Databases</span><div class="bar"><div class="bar-fill" style="width:85%"></div></div></div>
+                        <div class="skill-bar"><span class="skill-name">Docker / Deployment</span><div class="bar"><div class="bar-fill" style="width:80%"></div></div></div>
+                        <div class="skill-bar"><span class="skill-name">Data Pipelines</span><div class="bar"><div class="bar-fill" style="width:88%"></div></div></div>
+                        <div class="skill-bar"><span class="skill-name">Token Optimization</span><div class="bar"><div class="bar-fill" style="width:93%"></div></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tech-stack">
+                <h4>Tech Stack</h4>
+                <div class="stack-tags">
+                    <span class="stack-tag">Python</span>
+                    <span class="stack-tag">FastAPI</span>
+                    <span class="stack-tag">OpenAI</span>
+                    <span class="stack-tag">Groq</span>
+                    <span class="stack-tag">LangChain</span>
+                    <span class="stack-tag">ChromaDB</span>
+                    <span class="stack-tag">HuggingFace</span>
+                    <span class="stack-tag">PEFT / LoRA</span>
+                    <span class="stack-tag">RAGAS</span>
+                    <span class="stack-tag">Langfuse</span>
+                    <span class="stack-tag">Docker</span>
+                    <span class="stack-tag">Pydantic</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-inner">
+                <span>Senior LLM Engineer Portfolio</span>
+                <span class="footer-dot">•</span>
+                <span>Production-first, human-in-the-loop, metrics-driven</span>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

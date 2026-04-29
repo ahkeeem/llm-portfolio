@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  # Project 1: RAG Policy Advisor
+  rag-advisor:
+    build: 
+      context: ./01-rag-policy-advisor
+    ports:
+      - "8001:8000"
+    environment:
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - GROQ_API_BASE=https://api.groq.com/openai/v1
+    volumes:
+      - ./01-rag-policy-advisor/data:/app/data
+    restart: unless-stopped
+
+  # Project 2: RAG Evaluator
+  rag-evaluator:
+    build: 
+      context: ./02-rag-evaluator
+    ports:
+      - "8002:8000"
+    environment:
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - GROQ_API_BASE=https://api.groq.com/openai/v1
+    restart: unless-stopped
+
+  # Project 3: Receipt Fine-tuner Inference API
+  receipt-extractor:
+    build: 
+      context: ./03-receipt-finetuner
+    ports:
+      - "8003:8000"
+    environment:
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - GROQ_API_BASE=https://api.groq.com/openai/v1
+    volumes:
+      - ./03-receipt-finetuner/models:/app/models
+    restart: unless-stopped
+
+  # Project 4: Email Triage Agent
+  email-agent:
+    build: 
+      context: ./04-email-triage-agent
+    ports:
+      - "8004:8000"
+    environment:
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - GROQ_API_BASE=https://api.groq.com/openai/v1
+    restart: unless-stopped
