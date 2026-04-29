@@ -4,3 +4,5 @@ openai
 pydantic
 python-dotenv
 langfuse
+langgraph
+typing_extensions
