@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from core.inference import extract_receipt_fields
 
@@ -6,6 +7,14 @@ app = FastAPI(
     title="Receipt Fine-tuner",
     description="Extract structured data from receipt text using a fine-tuned model.",
     version="1.0.0",
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
