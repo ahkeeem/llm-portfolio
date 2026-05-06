@@ -1,8 +1,6 @@
 const API_URLS = {
     email: "https://email-x1cn.onrender.com",
-    rag: "https://rag-gdzc.onrender.com",
-    evaluator: "https://rag-gdzc.onrender.com", // Integrated into RAG backend
-    receipt: "http://127.0.0.1:8002" // Change when deployed
+    rag: "https://rag-gdzc.onrender.com"
 };
 // === API Status Check ===
 async function checkApiStatus() {
@@ -276,19 +274,16 @@ function resetRagDemo() {
 
 // === Evaluator Demo ===
 async function processEval() {
-    const endpoint = document.getElementById("evalEndpoint").value.trim();
-    if (!endpoint) return;
-
     document.getElementById("processEvalBtn").disabled = true;
     document.getElementById("evalLoading").style.display = "block";
     document.getElementById("evalResults").style.display = "none";
     document.getElementById("evalError").style.display = "none";
 
     try {
-        const res = await fetch(`${API_URLS.evaluator}/evaluate`, {
+        const res = await fetch(`${API_URLS.rag}/evaluate`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ rag_endpoint: endpoint })
+            body: JSON.stringify({})
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
@@ -300,8 +295,8 @@ async function processEval() {
         if (data.aggregate) {
             scoresHtml = Object.entries(data.aggregate).map(([key, value]) => `
                 <div class="class-badge">
-                    <span class="class-label">${key.replace('_', ' ')}</span>
-                    <span class="class-value ${value >= 0.85 ? 'low' : (value >= 0.7 ? 'normal' : 'urgent')}">${typeof value === 'number' && key.startsWith('avg_') ? (value * 100).toFixed(1) + '%' : value}</span>
+                    <span class="class-label">${key.replace(/_/g, ' ')}</span>
+                    <span class="class-value ${typeof value === 'number' && value >= 0.85 ? 'low' : (typeof value === 'number' && value >= 0.7 ? 'normal' : 'urgent')}">${typeof value === 'number' && key.startsWith('avg_') ? (value * 100).toFixed(1) + '%' : value}</span>
                 </div>
             `).join('');
         }
@@ -317,14 +312,24 @@ async function processEval() {
     document.getElementById("processEvalBtn").disabled = false;
 }
 
-// === Receipt Demo ===
+// === Receipt Demo (Edge-AI: runs entirely in the browser via Groq API) ===
+function getGroqKey() {
+    return (document.getElementById("groqKeyInput") || {}).value?.trim() || "";
+}
+
 function loadReceiptSample() {
     document.getElementById("receiptInput").value = "WHOLE FOODS MARKET - STORE #10402\n2345 BRYANT ST, SAN FRANCISCO, CA 94110\n05/15/2026 14:30\n\nORGANIC APPLES          $4.99\nALMOND MILK             $3.50\nWHOLE WHEAT BREAD       $2.99\n\nTOTAL DUE:              $11.48";
 }
 
 async function processReceipt() {
     const receipt_text = document.getElementById("receiptInput").value.trim();
+    const apiKey = getGroqKey();
     if (!receipt_text) return;
+    if (!apiKey) {
+        document.getElementById("receiptError").style.display = "block";
+        document.getElementById("receiptErrorMessage").textContent = "Please enter your Groq API key above to use the Edge-AI demo.";
+        return;
+    }
 
     document.getElementById("processReceiptBtn").disabled = true;
     document.getElementById("receiptLoading").style.display = "block";
@@ -332,20 +337,41 @@ async function processReceipt() {
     document.getElementById("receiptError").style.display = "none";
 
     try {
-        const res = await fetch(`${API_URLS.receipt}/extract`, {
+        // Edge-AI: Call Groq directly from the browser (no backend needed)
+        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ receipt_text })
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                model: "llama-3.1-8b-instant",
+                messages: [{
+                    role: "user",
+                    content: `Extract the following fields from this receipt text. Return ONLY valid JSON, no markdown:\n{"company": "", "date": "", "address": "", "total": ""}\n\nReceipt:\n${receipt_text}`
+                }],
+                temperature: 0.1
+            })
         });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
+        if (!res.ok) throw new Error(`Groq API: HTTP ${res.status}`);
+        const groqData = await res.json();
+        const content = groqData.choices[0].message.content;
 
-        window.currentReceiptPrediction = data;
+        // Parse JSON from response
+        let fields;
+        try {
+            const jsonMatch = content.match(/\{[\s\S]*\}/);
+            fields = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(content);
+        } catch {
+            fields = { raw_output: content };
+        }
+
+        window.currentReceiptPrediction = fields;
 
         document.getElementById("receiptLoading").style.display = "none";
         document.getElementById("receiptStep2").style.display = "block";
         
-        let fieldsHtml = Object.entries(data).map(([key, value]) => `
+        let fieldsHtml = Object.entries(fields).map(([key, value]) => `
             <div class="class-badge" style="flex-basis: 45%; margin-bottom: 12px;">
                 <span class="class-label">${key}</span>
                 <span class="class-value">${value}</span>
@@ -373,23 +399,11 @@ async function feedbackReceipt(isCorrect) {
     if (isCorrect) {
         document.getElementById("receiptFinalIcon").textContent = "✅";
         document.getElementById("receiptFinalMessage").textContent = "Extraction Verified";
-        document.getElementById("receiptFinalDetail").textContent = "This receipt was processed successfully and will be used as a positive ground-truth label.";
+        document.getElementById("receiptFinalDetail").textContent = "This receipt was processed successfully. In production, this would be stored as a positive ground-truth label for LoRA fine-tuning.";
     } else {
-        const receipt_text = document.getElementById("receiptInput").value.trim();
-        try {
-            await fetch(`${API_URLS.receipt}/review`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ 
-                    receipt_text, 
-                    predicted: window.currentReceiptPrediction || {}, 
-                    corrected: {} 
-                })
-            });
-        } catch(e) { console.error(e); }
         document.getElementById("receiptFinalIcon").textContent = "🔄";
         document.getElementById("receiptFinalMessage").textContent = "Flagged for Re-training";
-        document.getElementById("receiptFinalDetail").textContent = "This sample has been sent to the correction queue. The LoRA fine-tuning pipeline will use it in the next epoch.";
+        document.getElementById("receiptFinalDetail").textContent = "This sample has been flagged. In production, the corrected label would feed into the LoRA fine-tuning pipeline for the next training epoch.";
     }
 }
 

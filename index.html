@@ -443,11 +443,7 @@ Example: Dear support team, I've been waiting 3 weeks for my refund of $450. Thi
                         <h3>RAG Evaluator</h3>
                     </div>
                     <div class="demo-input-area">
-                        <p style="color: var(--text-secondary); margin-bottom: 16px;">Run an LLM-as-a-judge evaluation against the RAG Policy Advisor endpoint using a verified QA dataset.</p>
-                        <div style="margin-bottom: 20px;">
-                            <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px;">Target RAG Endpoint</label>
-                            <input type="text" id="evalEndpoint" class="demo-textarea" style="min-height: auto; padding: 12px; font-family: var(--mono);" value="https://rag-gdzc.onrender.com/query">
-                        </div>
+                        <p style="color: var(--text-secondary); margin-bottom: 16px;">Run an LLM-as-a-judge evaluation against the live RAG Policy Advisor using a verified QA dataset. Measures Faithfulness, Relevancy, and Correctness.</p>
                         <button class="btn btn-primary btn-large" id="processEvalBtn" onclick="processEval()">
                             <span class="btn-icon">⚙️</span> Run Evaluation
                         </button>
@@ -496,6 +492,11 @@ Example: Dear support team, I've been waiting 3 weeks for my refund of $450. Thi
                         <h3>Edge-AI Document Extraction</h3>
                     </div>
                     <div class="demo-input-area">
+                        <div style="margin-bottom: 16px; padding: 14px; background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.2); border-radius: var(--radius-sm);">
+                            <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px;">🔑 Groq API Key <span style="color: var(--accent-blue);">(free at console.groq.com)</span></label>
+                            <input type="password" id="groqKeyInput" class="demo-textarea" style="min-height: auto; padding: 10px; font-family: var(--mono); font-size: 0.8rem;" placeholder="gsk_...">
+                            <p style="font-size: 0.72rem; color: var(--text-muted); margin-top: 6px;">Your key is sent directly to Groq's API — never stored or logged here.</p>
+                        </div>
                         <textarea id="receiptInput" class="demo-textarea" style="min-height: 150px; font-family: var(--mono);" placeholder="Paste raw receipt text here..."></textarea>
                         <div class="demo-samples">
                             <button class="sample-btn" onclick="loadReceiptSample()">Load Example Receipt</button>
@@ -509,8 +510,8 @@ Example: Dear support team, I've been waiting 3 weeks for my refund of $450. Thi
                 <!-- Loading -->
                 <div class="demo-loading" id="receiptLoading" style="display:none;">
                     <div class="loader"></div>
-                    <p>Running local fine-tuned model...</p>
-                    <span class="loading-detail">Processing unstructured text → Extracting fields</span>
+                    <p>Running Edge-AI extraction...</p>
+                    <span class="loading-detail">Processing via Groq (Llama 3.1) → Extracting structured fields</span>
                 </div>
 
                 <!-- Step 2: Results -->
