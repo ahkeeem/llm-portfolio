@@ -1,6 +1,7 @@
 import os
 from openai import OpenAI
 from dotenv import load_dotenv
+from tenacity import retry, wait_exponential, stop_after_attempt
 
 # Load environment variables from .env file
 load_dotenv()
@@ -29,6 +30,7 @@ else:
 print(f"✅ LLM Provider: {PROVIDER} | Model: {DEFAULT_MODEL}")
 
 
+@retry(wait=wait_exponential(multiplier=1, min=2, max=10), stop=stop_after_attempt(3))
 def call_llm(prompt: str, model: str = None, temperature: float = 0.3) -> str:
     """
     Call LLM (Groq or OpenAI) with retry-friendly defaults.

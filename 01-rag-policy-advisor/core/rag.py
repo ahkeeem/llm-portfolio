@@ -1,8 +1,10 @@
 from core.vectorstore import search_similar
 from core.prompts import rag_prompt
 from core.llm import call_llm
+from functools import lru_cache
 
 
+@lru_cache(maxsize=100)
 def query_rag(question: str, top_k: int = 5) -> dict:
     """
     RAG pipeline:

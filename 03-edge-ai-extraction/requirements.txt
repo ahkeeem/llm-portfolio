@@ -8,3 +8,6 @@ torchvision
 opencv-python
 pillow
 pydantic
+openai
+python-dotenv
+tenacity

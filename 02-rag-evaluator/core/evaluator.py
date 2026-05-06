@@ -9,7 +9,7 @@ from core.metrics import score_faithfulness, score_relevancy, score_correctness
 
 def run_evaluation(
     qa_path: str = "data/qa_pairs/qa_pairs.json",
-    rag_endpoint: str = "http://localhost:8000/query",
+    rag_endpoint: str = None,
     flag_threshold: float = 0.6,
 ) -> dict:
     """
@@ -17,12 +17,14 @@ def run_evaluation(
 
     Args:
         qa_path: Path to the QA pairs JSON file.
-        rag_endpoint: URL of the RAG system's query endpoint.
+        rag_endpoint: URL of the RAG system's query endpoint. Defaults to RAG_ENDPOINT env var or Render URL.
         flag_threshold: Score below which a result is flagged for review.
 
     Returns:
         Dict with per-question results and aggregate metrics.
     """
+    if rag_endpoint is None:
+        rag_endpoint = os.getenv("RAG_ENDPOINT", "https://rag-gdzc.onrender.com/query")
     # Load QA pairs
     with open(qa_path, "r") as f:
         qa_pairs = json.load(f)
