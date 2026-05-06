@@ -1,7 +1,7 @@
 const API_URLS = {
     email: "https://email-x1cn.onrender.com",
     rag: "https://rag-gdzc.onrender.com",
-    evaluator: "http://127.0.0.1:8001", // Change when deployed
+    evaluator: "https://rag-gdzc.onrender.com", // Integrated into RAG backend
     receipt: "http://127.0.0.1:8002" // Change when deployed
 };
 // === API Status Check ===
@@ -297,17 +297,17 @@ async function processEval() {
         document.getElementById("evalResults").style.display = "block";
         
         let scoresHtml = '';
-        if (data.aggregate_scores) {
-            scoresHtml = Object.entries(data.aggregate_scores).map(([key, value]) => `
+        if (data.aggregate) {
+            scoresHtml = Object.entries(data.aggregate).map(([key, value]) => `
                 <div class="class-badge">
                     <span class="class-label">${key.replace('_', ' ')}</span>
-                    <span class="class-value ${value >= 0.85 ? 'low' : (value >= 0.7 ? 'normal' : 'urgent')}">${(value * 100).toFixed(1)}%</span>
+                    <span class="class-value ${value >= 0.85 ? 'low' : (value >= 0.7 ? 'normal' : 'urgent')}">${typeof value === 'number' && key.startsWith('avg_') ? (value * 100).toFixed(1) + '%' : value}</span>
                 </div>
             `).join('');
         }
         document.getElementById("evalScores").innerHTML = scoresHtml || '<p>No aggregate scores available</p>';
 
-        document.getElementById("evalFlagged").textContent = JSON.stringify(data.flagged_items || [], null, 2);
+        document.getElementById("evalFlagged").textContent = JSON.stringify(data.flagged || [], null, 2);
 
     } catch (err) {
         document.getElementById("evalLoading").style.display = "none";

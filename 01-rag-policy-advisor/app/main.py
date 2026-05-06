@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from core.rag import query_rag
+from core.evaluator import run_evaluation
 
 app = FastAPI(
     title="RAG Policy Advisor",
@@ -56,3 +57,20 @@ def flag(req: FlagRequest):
         "question": req.question,
         "reason": req.reason,
     }
+
+
+class EvalConfig(BaseModel):
+    qa_path: str = "data/qa_pairs/qa_pairs.json"
+    flag_threshold: float = 0.6
+
+
+@app.post("/evaluate")
+def evaluate(config: EvalConfig = EvalConfig()):
+    """
+    Run a full evaluation against the RAG system directly.
+    """
+    results = run_evaluation(
+        qa_path=config.qa_path,
+        flag_threshold=config.flag_threshold,
+    )
+    return results

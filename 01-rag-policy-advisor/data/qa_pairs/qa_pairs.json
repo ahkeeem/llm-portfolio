@@ -1,0 +1,17 @@
+[
+  {
+    "question": "What are the UK government's key principles on AI regulation?",
+    "answer": "The UK follows a pro-innovation, sector-specific approach to AI regulation based on five principles: safety, transparency, fairness, accountability, and contestability.",
+    "verified": true
+  },
+  {
+    "question": "How does the UK approach AI transparency requirements?",
+    "answer": "The UK requires organisations deploying AI to be transparent about when AI is being used in decision-making, provide explanations of AI decisions, and maintain records of AI system development and deployment.",
+    "verified": true
+  },
+  {
+    "question": "What sectors are prioritised in UK AI regulation?",
+    "answer": "The UK prioritises regulation in financial services, healthcare, transport, and telecommunications, with existing sector regulators taking the lead on AI governance within their domains.",
+    "verified": false
+  }
+]
