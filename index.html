@@ -168,7 +168,93 @@
                 <p>Loading demo…</p>
             </div>
             <div id="demoContent" class="demo-container" style="display:none;">
-                <!-- Demo UI will be populated by script.js after metrics are fetched -->
+                <div class="demo-tabs">
+                <button class="tab-btn" id="tab-rag" onclick="switchDemo('rag')">🧠 RAG Advisor</button>
+                <button class="tab-btn" id="tab-evaluator" onclick="switchDemo('evaluator')">📊 RAG Evaluator</button>
+                <button class="tab-btn" id="tab-receipt" onclick="switchDemo('receipt')">🛡️ Edge-AI Extraction</button>
+                <button class="tab-btn active" id="tab-email" onclick="switchDemo('email')">✉️ Email Agent</button>
+            </div>
+
+            <div class="demo-container" id="demo-email">
+                <!-- Step 1: Input -->
+                <div class="demo-step" id="step1">
+                    <div class="step-header">
+                        <div class="step-badge">Step 1</div>
+                        <h3>Submit Email</h3>
+                    </div>
+                    <div class="demo-input-area">
+                        <textarea id="emailInput" class="demo-textarea" placeholder="Paste or type an email here...
+
+Example: Dear support team, I've been waiting 3 weeks for my refund of $450. This is completely unacceptable. I need this resolved immediately or I will have to escalate this matter further."></textarea>
+                        <div class="demo-samples">
+                            <span class="sample-label">Quick samples:</span>
+                            <button class="sample-btn" onclick="loadSample('complaint')">Complaint</button>
+                            <button class="sample-btn" onclick="loadSample('request')">Request</button>
+                            <button class="sample-btn" onclick="loadSample('info')">Info</button>
+                        </div>
+                        <button class="btn btn-primary btn-large" id="processBtn" onclick="processEmail()">
+                            <span class="btn-icon">▶</span> Process Email
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Loading -->
+                <div class="demo-loading" id="demoLoading" style="display:none;">
+                    <div class="loader"></div>
+                    <p>Agent is thinking...</p>
+                    <span class="loading-detail">Classifying → Drafting response</span>
+                </div>
+
+                <!-- Step 2: Results -->
+                <div class="demo-step" id="step2" style="display:none;">
+                    <div class="step-header">
+                        <div class="step-badge">Step 2</div>
+                        <h3>Agent Output</h3>
+                    </div>
+
+                    <div class="results-grid">
+                        <!-- Classification -->
+                        <div class="result-card">
+                            <div class="result-header">
+                                <span class="result-icon">🏷️</span>
+                                <h4>Classification</h4>
+                            </div>
+                            <div class="result-body" id="classificationResult">
+                                <div class="classification-badges">
+                                    <div class="class-badge">
+                                        <span class="class-label">Priority</span>
+                                        <span class="class-value" id="priorityBadge">—</span>
+                                    </div>
+                                    <div class="class-badge">
+                                        <span class="class-label">Type</span>
+                                        <span class="class-value" id="typeBadge">—</span>
+                                    </div>
+                                    <div class="class-badge">
+                                        <span class="class-label">Privacy Scan</span>
+                                        <span class="class-value" id="privacyBadge" style="color:var(--accent-green)">PASSED</span>
+                                    </div>
+                                </div>
+                                <div class="system-context-tag">
+                                    <span class="context-icon">🏢</span> Using Company Knowledge Base (CRM-Linked)
+                                </div>
+                                <pre class="raw-json" id="rawClassification"></pre>
+                            </div>
+                        </div>
+
+                        <!-- Draft Response -->
+                        <div class="result-card result-card-large">
+                            <div class="result-header">
+                                <span class="result-icon">✉️</span>
+                                <h4>Draft Response</h4>
+                                <div class="header-actions">
+                                    <a href="CRM_INTEGRATION.md" target="_blank" class="integration-link">CRM Integration Guide</a>
+                                    <span class="approval-flag" id="approvalFlag">⏳ Requires Approval</span>
+                                </div>
+                            </div>
+                            <div class="result-body">
+                                <div class="draft-text" id="draftResponse"></div>
+                            </div>
+                        </div>
             </div>
         </div>
     </section>
@@ -188,7 +274,60 @@
                 </div>
                 <div class="accordion-content">
                     <div class="arch-grid">
-                        <!-- Architecture cards – copy from original (omitted for brevity) -->
+                <div class="arch-card">
+                    <h4>📁 Consistent Structure</h4>
+                    <pre class="arch-code">project_name/
+├── app/          <span class="code-comment"># FastAPI endpoints</span>
+├── core/         <span class="code-comment"># Business logic</span>
+├── data/         <span class="code-comment"># Raw + processed</span>
+├── scripts/      <span class="code-comment"># Ingestion / training</span>
+├── tests/        <span class="code-comment"># Unit + integration</span>
+├── Dockerfile    <span class="code-comment"># Container-ready</span>
+├── requirements.txt
+└── README.md</pre>
+                </div>
+
+                <div class="arch-card">
+                    <h4>🔄 Agent Pipeline (P4)</h4>
+                    <pre class="arch-code">Email Text
+  │
+  ├─▶ <span class="code-highlight">LLM Call 1</span>: classify
+  │       │
+  │       ▼
+  │   { priority, type }
+  │
+  └─▶ <span class="code-highlight">LLM Call 2</span>: draft
+          │
+          ▼
+     Draft Response
+          │
+          ▼
+  <span class="code-warning">requires_approval: true</span></pre>
+                </div>
+
+                <div class="arch-card">
+                    <h4>💰 Live Token Usage</h4>
+                    <div class="budget-table">
+                        <div class="budget-row">
+                            <span>RAG Advisor</span>
+                            <span class="budget-value" id="budgetRag">—</span>
+                        </div>
+                        <div class="budget-row">
+                            <span>Evaluator</span>
+                            <span class="budget-value" id="budgetEval">—</span>
+                        </div>
+                        <div class="budget-row">
+                            <span>Edge-AI Extraction</span>
+                            <span class="budget-value" id="budgetReceipt">client-side</span>
+                        </div>
+                        <div class="budget-row">
+                            <span>Email Agent</span>
+                            <span class="budget-value" id="budgetEmail">—</span>
+                        </div>
+                        <div class="budget-row budget-total">
+                            <span>Total Cost (Est.)</span>
+                            <span class="budget-value" id="budgetTotal">—</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -210,8 +349,10 @@
                 </div>
                 <div class="accordion-content">
                     <div class="skills-grid">
-                        <!-- Skills cards – copy from original (omitted for brevity) -->
-                    </div>
+                <div class="skill-group">
+                    <h4>🧠 LLM Engineering</h4>
+                    <div class="skill-bars">
+                        <div class="skill-bar"><span class="skill-name">Prompt Engineering</span><div class="bar"><div class="bar-fill" style="width:95%"></div></div>
                 </div>
             </div>
         </div>

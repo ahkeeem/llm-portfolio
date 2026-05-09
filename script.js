@@ -119,16 +119,24 @@ async function processEmail() {
         document.getElementById("step2").style.display = "block";
 
         // Parse classification
-        let classification = data.classification;
+        let classification = data.classification || "";
         let priority = "—";
         let type = "—";
-        try {
-            const parsed = typeof classification === "string" ? JSON.parse(classification) : classification;
-            priority = parsed.priority || "—";
-            type = parsed.type || "—";
-            classification = JSON.stringify(parsed, null, 2);
-        } catch {
-            // classification might be raw text
+        
+        // Handle new string format: "Priority: URGENT | Type: COMPLAINT"
+        if (typeof classification === "string" && classification.includes("|")) {
+            const parts = classification.split("|");
+            priority = parts[0].replace("Priority:", "").trim();
+            type = parts[1].replace("Type:", "").trim();
+        } else {
+            try {
+                const parsed = typeof classification === "string" ? JSON.parse(classification) : classification;
+                priority = parsed.priority || "—";
+                type = parsed.type || "—";
+                classification = JSON.stringify(parsed, null, 2);
+            } catch {
+                // Fallback
+            }
         }
 
         const prBadge = document.getElementById("priorityBadge");
