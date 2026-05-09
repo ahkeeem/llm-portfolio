@@ -40,6 +40,16 @@ MANIFEST
 **/models/*
 !**/models/.gitkeep
 
+# EAR Datasets Structure
+datasets/**/raw/*
+!datasets/**/raw/.gitkeep
+datasets/**/processed/*
+!datasets/**/processed/.gitkeep
+*.zip
+*.csv
+*.sqlite
+*.db
+
 # Cache & Vector DB
 .chroma_cache/
 .chroma/
