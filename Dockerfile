@@ -9,10 +9,8 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Install python requirements
-COPY 04-email-triage-agent/requirements.txt ./
-# Also we need to make sure we install celery, redis, fastapi, uvicorn
+COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install celery redis fastapi uvicorn langgraph pydantic chromadb
 
 # Copy the entire enterprise directory structure
 COPY apps/ ./apps/

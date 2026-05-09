@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+openai
+pydantic
+python-dotenv
+langfuse
+langgraph
+typing_extensions
+tenacity
+celery
+redis
+chromadb
