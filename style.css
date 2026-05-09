@@ -62,7 +62,6 @@ code { font-family: var(--mono); font-size: 0.85em; background: rgba(79,143,255,
 #layout {
     display: grid;
     grid-template-areas:
-        "nav nav"
         "hero hero"
         "projects projects"
         "demo demo"
@@ -70,8 +69,8 @@ code { font-family: var(--mono); font-size: 0.85em; background: rgba(79,143,255,
         "skills skills"
         "footer footer";
     gap: var(--spacing-base);
+    padding-top: 64px;
 }
-#layout > .nav { grid-area: nav; }
 #layout > .hero { grid-area: hero; }
 #layout > .section#projects { grid-area: projects; }
 #layout > .section#demo { grid-area: demo; }
@@ -115,6 +114,10 @@ code { font-family: var(--mono); font-size: 0.85em; background: rgba(79,143,255,
 .btn-secondary { background: transparent; color: var(--color-text); border: 1px solid var(--border); }
 .btn-secondary:hover { border-color: var(--accent-blue); background: rgba(79,143,255,.05); }
 .btn-large { padding: 16px 32px; font-size: 1rem; width: 100%; justify-content: center; margin-top: 16px; }
+.btn-approve { background: var(--accent-green); color: #fff; padding: 14px 32px; font-size: 1rem; }
+.btn-approve:hover { background: #16a34a; transform: translateY(-1px); }
+.btn-reject { background: transparent; color: var(--accent-red); border: 1px solid var(--accent-red); padding: 14px 32px; font-size: 1rem; }
+.btn-reject:hover { background: rgba(239,68,68,.1); }
 
 /* === SECTION HEADERS === */
 .section-header { text-align: center; margin-bottom: 60px; }
@@ -197,14 +200,7 @@ body.spacious { --spacing-base: 1.5rem; }
     will-change: transform, box-shadow;
 }
 
-/* === RESPONSIVE === */
-@media (max-width: 768px) {
-    .hero-title { font-size: var(--fs-2); }
-    .hero-stats { flex-wrap: wrap; gap: 24px; }
-    .projects-grid, .arch-grid, .skills-grid { grid-template-columns: 1fr; }
-    .nav-links { display: none; }
-    .approval-actions { flex-direction: column; }
-}
+
 
 /* === DARK LIGHT TOGGLE (JS will toggle .dark class on body) */
 body.dark { --bg-body: var(--bg-primary); --bg-surface: var(--bg-card); --color-text: var(--text-primary); --border: rgba(255,255,255,0.1); }

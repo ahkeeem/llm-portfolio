@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="compact">
+<body class="">
 <div id="layout">
     <!-- Navigation -->
     <nav class="nav" id="nav">
@@ -587,9 +587,45 @@ Example: Dear support team, I've been waiting 3 weeks for my refund of $450. Thi
                         </div>
                     </div>
                 </div>
+
+                <div class="arch-card">
+                    <h4>🛡️ Cross-Cutting Concerns</h4>
+                    <div class="concern-list">
+                        <div class="concern-item">
+                            <span class="concern-icon">🔍</span>
+                            <div>
+                                <strong>Observability</strong>
+                                <span>Langfuse tracing per LLM call</span>
+                            </div>
+                        </div>
+                        <div class="concern-item">
+                            <span class="concern-icon">🔒</span>
+                            <div>
+                                <strong>Security</strong>
+                                <span>.env secrets, input sanitization</span>
+                            </div>
+                        </div>
+                        <div class="concern-item">
+                            <span class="concern-icon">🔁</span>
+                            <div>
+                                <strong>Error Handling</strong>
+                                <span>Retry with exponential backoff</span>
+                            </div>
+                        </div>
+                        <div class="concern-item">
+                            <span class="concern-icon">🐳</span>
+                            <div>
+                                <strong>Deployment</strong>
+                                <span>Docker + Uvicorn per project</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </section>
+    </div>
+</div>
+</section>
 
     <!-- Skills Accordion -->
     <section class="section" id="skills">
@@ -606,10 +642,46 @@ Example: Dear support team, I've been waiting 3 weeks for my refund of $450. Thi
                 </div>
                 <div class="accordion-content">
                     <div class="skills-grid">
-                <div class="skill-group">
-                    <h4>🧠 LLM Engineering</h4>
-                    <div class="skill-bars">
-                        <div class="skill-bar"><span class="skill-name">Prompt Engineering</span><div class="bar"><div class="bar-fill" style="width:95%"></div></div>
+                        <div class="skill-group">
+                            <h4>🧠 LLM Engineering</h4>
+                            <div class="skill-bars">
+                                <div class="skill-bar"><span class="skill-name">Prompt Engineering</span><div class="bar"><div class="bar-fill" style="width:95%"></div></div></div>
+                                <div class="skill-bar"><span class="skill-name">RAG Architecture</span><div class="bar"><div class="bar-fill" style="width:92%"></div></div></div>
+                                <div class="skill-bar"><span class="skill-name">LLM Evaluation</span><div class="bar"><div class="bar-fill" style="width:85%"></div></div></div>
+                                <div class="skill-bar"><span class="skill-name">Fine-tuning (LoRA)</span><div class="bar"><div class="bar-fill" style="width:82%"></div></div></div>
+                                <div class="skill-bar"><span class="skill-name">Agent Design</span><div class="bar"><div class="bar-fill" style="width:88%"></div></div></div>
+                            </div>
+                        </div>
+                        <div class="skill-group">
+                            <h4>🏗️ System Design</h4>
+                            <div class="skill-bars">
+                                <div class="skill-bar"><span class="skill-name">FastAPI / Python</span><div class="bar"><div class="bar-fill" style="width:95%"></div></div></div>
+                                <div class="skill-bar"><span class="skill-name">Vector Databases</span><div class="bar"><div class="bar-fill" style="width:85%"></div></div></div>
+                                <div class="skill-bar"><span class="skill-name">Docker / Deployment</span><div class="bar"><div class="bar-fill" style="width:80%"></div></div></div>
+                                <div class="skill-bar"><span class="skill-name">Data Pipelines</span><div class="bar"><div class="bar-fill" style="width:88%"></div></div></div>
+                                <div class="skill-bar"><span class="skill-name">Token Optimization</span><div class="bar"><div class="bar-fill" style="width:93%"></div></div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tech-stack">
+                        <h4>Tech Stack</h4>
+                        <div class="stack-tags">
+                            <span class="stack-tag">Python</span>
+                            <span class="stack-tag">FastAPI</span>
+                            <span class="stack-tag">OpenAI</span>
+                            <span class="stack-tag">Groq</span>
+                            <span class="stack-tag">LangChain</span>
+                            <span class="stack-tag">ChromaDB</span>
+                            <span class="stack-tag">HuggingFace</span>
+                            <span class="stack-tag">PEFT / LoRA</span>
+                            <span class="stack-tag">RAGAS</span>
+                            <span class="stack-tag">Langfuse</span>
+                            <span class="stack-tag">Docker</span>
+                            <span class="stack-tag">Celery</span>
+                            <span class="stack-tag">Redis</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
