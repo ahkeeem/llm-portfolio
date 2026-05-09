@@ -164,7 +164,7 @@
     <section class="section section-dark" id="demo">
         <div class="container">
             <div id="demoContent" class="demo-container" style="display:block;">
-                <div class="demo-tabs">
+<div class="demo-tabs">
                 <button class="tab-btn" id="tab-rag" onclick="switchDemo('rag')">🧠 RAG Advisor</button>
                 <button class="tab-btn" id="tab-evaluator" onclick="switchDemo('evaluator')">📊 RAG Evaluator</button>
                 <button class="tab-btn" id="tab-receipt" onclick="switchDemo('receipt')">🛡️ Edge-AI Extraction</button>
@@ -251,8 +251,269 @@ Example: Dear support team, I've been waiting 3 weeks for my refund of $450. Thi
                                 <div class="draft-text" id="draftResponse"></div>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Step 3: Approval -->
+                    <div class="approval-section" id="step3">
+                        <div class="step-header">
+                            <div class="step-badge step-badge-warning">Step 3</div>
+                            <h3>Human-in-the-Loop Decision</h3>
+                        </div>
+                        <div class="approval-actions">
+                            <button class="btn btn-approve" onclick="approveEmail(true)">
+                                ✓ Approve & Send
+                            </button>
+                            <button class="btn btn-reject" onclick="approveEmail(false)">
+                                ✗ Reject & Archive
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Final Status -->
+                    <div class="final-status" id="finalStatus" style="display:none;">
+                        <div class="status-icon" id="finalIcon"></div>
+                        <h3 id="finalMessage"></h3>
+                        <p id="finalDetail"></p>
+                        <button class="btn btn-secondary" onclick="resetDemo()">Process Another Email</button>
+                    </div>
+                </div>
+
+                <!-- Error -->
+                <div class="demo-error" id="demoError" style="display:none;">
+                    <span class="error-icon">⚠️</span>
+                    <h3>Connection Error</h3>
+                    <p id="errorMessage"></p>
+                    <p class="error-hint">Make sure the API server is running:<br><code>uvicorn app.main:app --reload</code></p>
+                    <button class="btn btn-secondary" onclick="resetDemo()">Try Again</button>
+                </div>
             </div>
+
+            <!-- RAG Demo -->
+            <div class="demo-container" id="demo-rag" style="display:none;">
+                <!-- Step 1: Input -->
+                <div class="demo-step" id="ragStep1">
+                    <div class="step-header">
+                        <div class="step-badge">Step 1</div>
+                        <h3>Ask a Policy Question</h3>
+                    </div>
+                    <div class="demo-input-area">
+                        <textarea id="ragInput" class="demo-textarea" style="min-height: 100px;" placeholder="e.g. What are the key principles of the UK's AI regulation policy?"></textarea>
+                        <div class="demo-samples">
+                            <span class="sample-label">Quick samples:</span>
+                            <button class="sample-btn" onclick="loadRagSample('ai_policy')">AI Framework</button>
+                            <button class="sample-btn" onclick="loadRagSample('data_protection')">Data Protection</button>
+                            <button class="sample-btn" onclick="loadRagSample('compute')">Compute Power</button>
+                        </div>
+                        <button class="btn btn-primary btn-large" id="processRagBtn" onclick="processRag()">
+                            <span class="btn-icon">🔍</span> Search Knowledge Base
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Loading -->
+                <div class="demo-loading" id="ragLoading" style="display:none;">
+                    <div class="loader"></div>
+                    <p>Searching Vector Database...</p>
+                    <span class="loading-detail">Retrieving top-k chunks → Generating answer</span>
+                </div>
+
+                <!-- Step 2: Results -->
+                <div class="demo-step" id="ragStep2" style="display:none;">
+                    <div class="step-header">
+                        <div class="step-badge">Step 2</div>
+                        <h3>RAG Output</h3>
+                    </div>
+                    
+                    <div class="results-grid">
+                        <div class="result-card result-card-large">
+                            <div class="result-header">
+                                <span class="result-icon">🤖</span>
+                                <h4>Generated Answer</h4>
+                            </div>
+                            <div class="result-body">
+                                <div class="draft-text" id="ragAnswer"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="step-header" style="margin-top:20px;">
+                        <div class="step-badge" style="background:var(--accent-blue)">Retrieved Sources</div>
+                    </div>
+                    <div class="results-grid" id="ragSourcesGrid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));">
+                        <!-- Sources will be rendered here -->
+                    </div>
+
+                    <!-- Step 3: Approval/Feedback -->
+                    <div class="approval-section" id="ragStep3" style="margin-top: 24px;">
+                        <div class="step-header">
+                            <div class="step-badge step-badge-warning">Step 3</div>
+                            <h3>Human-in-the-Loop Validation</h3>
+                        </div>
+                        <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 16px;">
+                            Review the generated answer and retrieved sources. Your feedback is used to evaluate the model's accuracy and improve future retrieval strategies.
+                        </p>
+                        <div class="approval-actions">
+                            <button class="btn btn-approve" onclick="feedbackRag(true)">
+                                👍 Accurate & Well-Sourced
+                            </button>
+                            <button class="btn btn-reject" onclick="feedbackRag(false)">
+                                👎 Flag for Review
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Final Status -->
+                    <div class="final-status" id="ragFinalStatus" style="display:none; margin-top: 24px;">
+                        <div class="status-icon" id="ragFinalIcon"></div>
+                        <h3 id="ragFinalMessage"></h3>
+                        <p id="ragFinalDetail"></p>
+                        <button class="btn btn-secondary" style="margin-top: 16px;" onclick="resetRagDemo()">Ask Another Question</button>
+                    </div>
+                </div>
+
+                <!-- Error -->
+                <div class="demo-error" id="ragError" style="display:none;">
+                    <span class="error-icon">⚠️</span>
+                    <h3>Connection Error</h3>
+                    <p id="ragErrorMessage"></p>
+                    <button class="btn btn-secondary" onclick="resetRagDemo()">Try Again</button>
+                </div>
+            </div>
+
+            <!-- Evaluator Demo -->
+            <div class="demo-container" id="demo-evaluator" style="display:none;">
+                <div class="demo-step">
+                    <div class="step-header">
+                        <div class="step-badge">Run Pipeline</div>
+                        <h3>RAG Evaluator</h3>
+                    </div>
+                    <div class="demo-input-area">
+                        <p style="color: var(--text-secondary); margin-bottom: 16px;">Run an LLM-as-a-judge evaluation against the live RAG Policy Advisor using a verified QA dataset. Measures Faithfulness, Relevancy, and Correctness.</p>
+                        <button class="btn btn-primary btn-large" id="processEvalBtn" onclick="processEval()">
+                            <span class="btn-icon">⚙️</span> Run Evaluation
+                        </button>
+                    </div>
+                </div>
+
+                <div class="demo-loading" id="evalLoading" style="display:none;">
+                    <div class="loader"></div>
+                    <p>Evaluating answers...</p>
+                    <span class="loading-detail">Measuring Faithfulness, Relevancy, and Correctness</span>
+                </div>
+
+                <div class="demo-step" id="evalResults" style="display:none;">
+                    <div class="step-header">
+                        <div class="step-badge">Evaluation Results</div>
+                    </div>
+                    <div class="results-grid">
+                        <div class="result-card result-card-large">
+                            <div class="result-header">
+                                <span class="result-icon">📈</span>
+                                <h4>Aggregate Scores</h4>
+                            </div>
+                            <div class="classification-badges" id="evalScores"></div>
+                        </div>
+                    </div>
+                    <div class="step-header" style="margin-top:20px;">
+                        <div class="step-badge step-badge-warning">Flagged Items (Human Review Needed)</div>
+                    </div>
+                    <div class="result-card">
+                        <pre class="raw-json" id="evalFlagged"></pre>
+                    </div>
+                </div>
+                <div class="demo-error" id="evalError" style="display:none;">
+                    <span class="error-icon">⚠️</span>
+                    <h3>Connection Error</h3>
+                    <p id="evalErrorMessage"></p>
+                </div>
+            </div>
+
+            <!-- Receipt Demo -->
+            <div class="demo-container" id="demo-receipt" style="display:none;">
+                <!-- Step 1: Input -->
+                <div class="demo-step" id="receiptStep1">
+                    <div class="step-header">
+                        <div class="step-badge">Step 1</div>
+                        <h3>Edge-AI Document Extraction</h3>
+                    </div>
+                    <div class="demo-input-area">
+                        <div style="margin-bottom: 16px; padding: 14px; background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.2); border-radius: var(--radius-sm);">
+                            <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px;">🔑 Groq API Key <span style="color: var(--accent-blue);">(free at console.groq.com)</span></label>
+                            <input type="password" id="groqKeyInput" class="demo-textarea" style="min-height: auto; padding: 10px; font-family: var(--mono); font-size: 0.8rem;" placeholder="gsk_...">
+                            <p style="font-size: 0.72rem; color: var(--text-muted); margin-top: 6px;">Your key is sent directly to Groq's API — never stored or logged here.</p>
+                        </div>
+                        <textarea id="receiptInput" class="demo-textarea" style="min-height: 150px; font-family: var(--mono);" placeholder="Paste raw receipt text here..."></textarea>
+                        <div class="demo-samples">
+                            <button class="sample-btn" onclick="loadReceiptSample()">Load Example Receipt</button>
+                        </div>
+                        <button class="btn btn-primary btn-large" id="processReceiptBtn" onclick="processReceipt()">
+                            <span class="btn-icon">🧾</span> Extract Data
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Loading -->
+                <div class="demo-loading" id="receiptLoading" style="display:none;">
+                    <div class="loader"></div>
+                    <p>Running Edge-AI extraction...</p>
+                    <span class="loading-detail">Processing via Groq (Llama 3.1) → Extracting structured fields</span>
+                </div>
+
+                <!-- Step 2: Results -->
+                <div class="demo-step" id="receiptStep2" style="display:none;">
+                    <div class="step-header">
+                        <div class="step-badge">Step 2</div>
+                        <h3>Structured Output</h3>
+                    </div>
+                    <div class="results-grid">
+                        <div class="result-card result-card-large">
+                            <div class="result-header">
+                                <span class="result-icon">📊</span>
+                                <h4>Extracted Fields</h4>
+                            </div>
+                            <div class="classification-badges" style="flex-wrap: wrap;" id="receiptFields"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 3: HITL -->
+                    <div class="approval-section" id="receiptStep3" style="margin-top: 24px;">
+                        <div class="step-header">
+                            <div class="step-badge step-badge-warning">Step 3</div>
+                            <h3>Human-in-the-Loop Review</h3>
+                        </div>
+                        <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 16px;">
+                            Verify the extraction. In production, human corrections feed directly back into the LoRA fine-tuning pipeline to continuously improve accuracy.
+                        </p>
+                        <div class="approval-actions">
+                            <button class="btn btn-approve" onclick="feedbackReceipt(true)">
+                                ✓ Extraction is 100% Correct
+                            </button>
+                            <button class="btn btn-reject" onclick="feedbackReceipt(false)">
+                                ✎ Flag for Re-training
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Final Status -->
+                    <div class="final-status" id="receiptFinalStatus" style="display:none; margin-top: 24px;">
+                        <div class="status-icon" id="receiptFinalIcon"></div>
+                        <h3 id="receiptFinalMessage"></h3>
+                        <p id="receiptFinalDetail"></p>
+                        <button class="btn btn-secondary" style="margin-top: 16px;" onclick="resetReceiptDemo()">Process Another Receipt</button>
+                    </div>
+                </div>
+
+                <!-- Error -->
+                <div class="demo-error" id="receiptError" style="display:none;">
+                    <span class="error-icon">⚠️</span>
+                    <h3>Connection Error</h3>
+                    <p id="receiptErrorMessage"></p>
+                    <button class="btn btn-secondary" onclick="resetReceiptDemo()">Try Again</button>
+                </div>
+            </div>
+
         </div>
+</div>
     </section>
 
     <!-- Architecture Accordion -->
