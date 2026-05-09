@@ -3,6 +3,7 @@ from typing import TypedDict, List
 from langgraph.graph import StateGraph, END
 from core.prompts import classify_prompt, response_prompt
 from core.llm import call_llm
+from core.monitoring import metrics
 
 # Enterprise Context: Usually fetched from a database/CRM
 COMPANY_INFO = """
@@ -54,6 +55,9 @@ def scan_node(state: AgentState):
     """Redact PII before any LLM call. The LLM only ever sees redacted_text."""
     redacted, pii_types = _redact_pii(state["email_text"])
     pii_found = len(pii_types) > 0
+    # Track PII in telemetry
+    if pii_found:
+        metrics.record_pii(pii_types)
     # LLM receives the redacted version only
     contextual_text = f"COMPANY CONTEXT:\n{COMPANY_INFO}\n\nEMAIL TO PROCESS:\n{redacted}"
     return {

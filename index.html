@@ -49,16 +49,16 @@
                     <span class="stat-label">Projects</span>
                 </div>
                 <div class="stat">
-                    <span class="stat-value">~$5</span>
-                    <span class="stat-label">/mo Total Cost</span>
+                    <span class="stat-value" id="liveTokens">—</span>
+                    <span class="stat-label">Tokens Used</span>
                 </div>
                 <div class="stat">
-                    <span class="stat-value">100%</span>
-                    <span class="stat-label">Human-in-Loop</span>
+                    <span class="stat-value" id="liveCost">—</span>
+                    <span class="stat-label">Est. Cost</span>
                 </div>
                 <div class="stat">
-                    <span class="stat-value">Docker</span>
-                    <span class="stat-label">Ready</span>
+                    <span class="stat-value" id="liveRequests">—</span>
+                    <span class="stat-label">API Calls</span>
                 </div>
             </div>
             <div class="hero-actions">
@@ -612,27 +612,27 @@ Example: Dear support team, I've been waiting 3 weeks for my refund of $450. Thi
                 </div>
 
                 <div class="arch-card">
-                    <h4>💰 Token Budget</h4>
+                    <h4>💰 Live Token Usage</h4>
                     <div class="budget-table">
                         <div class="budget-row">
                             <span>RAG Advisor</span>
-                            <span class="budget-value">~1,500 tok</span>
+                            <span class="budget-value" id="budgetRag">—</span>
                         </div>
                         <div class="budget-row">
                             <span>Evaluator</span>
-                            <span class="budget-value">~1,500 tok</span>
+                            <span class="budget-value" id="budgetEval">—</span>
                         </div>
                         <div class="budget-row">
-                            <span>Fine-tuner</span>
-                            <span class="budget-value">~400 tok</span>
+                            <span>Edge-AI Extraction</span>
+                            <span class="budget-value" id="budgetReceipt">client-side</span>
                         </div>
                         <div class="budget-row">
-                            <span>Agent</span>
-                            <span class="budget-value">~1,250 tok</span>
+                            <span>Email Agent</span>
+                            <span class="budget-value" id="budgetEmail">—</span>
                         </div>
                         <div class="budget-row budget-total">
-                            <span>Monthly Total</span>
-                            <span class="budget-value">~$5.23</span>
+                            <span>Total Cost (Est.)</span>
+                            <span class="budget-value" id="budgetTotal">—</span>
                         </div>
                     </div>
                 </div>

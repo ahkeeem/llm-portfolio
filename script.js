@@ -2,6 +2,58 @@ const API_URLS = {
     email: "https://email-x1cn.onrender.com",
     rag: "https://rag-gdzc.onrender.com"
 };
+
+// === Live Metrics Dashboard ===
+async function fetchLiveMetrics() {
+    let ragTokens = 0, ragCost = 0, ragRequests = 0;
+    let emailTokens = 0, emailCost = 0, emailRequests = 0;
+
+    try {
+        const ragRes = await fetch(`${API_URLS.rag}/metrics`, { signal: AbortSignal.timeout(3000) });
+        if (ragRes.ok) {
+            const ragData = await ragRes.json();
+            ragTokens = ragData.counters?.tokens_total || 0;
+            ragCost = ragData.cost_estimate_usd || 0;
+            ragRequests = ragData.counters?.requests_total || 0;
+        }
+    } catch {}
+
+    try {
+        const emailRes = await fetch(`${API_URLS.email}/metrics`, { signal: AbortSignal.timeout(3000) });
+        if (emailRes.ok) {
+            const emailData = await emailRes.json();
+            emailTokens = emailData.counters?.tokens_total || 0;
+            emailCost = emailData.cost_estimate_usd || 0;
+            emailRequests = emailData.counters?.requests_total || 0;
+        }
+    } catch {}
+
+    const totalTokens = ragTokens + emailTokens;
+    const totalCost = ragCost + emailCost;
+    const totalRequests = ragRequests + emailRequests;
+
+    // Update hero stats
+    const tokEl = document.getElementById("liveTokens");
+    const costEl = document.getElementById("liveCost");
+    const reqEl = document.getElementById("liveRequests");
+    if (tokEl) tokEl.textContent = totalTokens > 0 ? totalTokens.toLocaleString() : "0";
+    if (costEl) costEl.textContent = `$${totalCost.toFixed(4)}`;
+    if (reqEl) reqEl.textContent = totalRequests.toLocaleString();
+
+    // Update token budget section
+    const budgetRag = document.getElementById("budgetRag");
+    const budgetEval = document.getElementById("budgetEval");
+    const budgetEmail = document.getElementById("budgetEmail");
+    const budgetTotal = document.getElementById("budgetTotal");
+    if (budgetRag) budgetRag.textContent = ragTokens > 0 ? `${ragTokens.toLocaleString()} tok` : "0 tok";
+    if (budgetEval) budgetEval.textContent = "integrated";
+    if (budgetEmail) budgetEmail.textContent = emailTokens > 0 ? `${emailTokens.toLocaleString()} tok` : "0 tok";
+    if (budgetTotal) budgetTotal.textContent = `$${totalCost.toFixed(4)}`;
+}
+
+// Fetch on load and every 15 seconds
+fetchLiveMetrics();
+setInterval(fetchLiveMetrics, 15000);
 // === API Status Check ===
 async function checkApiStatus() {
     const dot = document.getElementById("apiStatus");
