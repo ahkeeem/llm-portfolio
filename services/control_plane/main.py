@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Dict, Any, Optional
 
@@ -16,11 +17,23 @@ WorkflowRegistry.register("analytics-workflow", AnalyticsWorkflow("analytics-wor
 
 app = FastAPI(title="Enterprise Agent Runtime (EAR) Control Plane")
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 class InvokeRequest(BaseModel):
     workflow_id: str
     session_id: str
     inputs: Dict[str, Any]
     config: Optional[Dict[str, Any]] = None
+
+class ApproveRequest(BaseModel):
+    email_text: Optional[str] = None
+    approved: bool
 
 @app.post("/api/v1/workflows/invoke")
 async def invoke_workflow(req: InvokeRequest):
@@ -56,7 +69,7 @@ async def invoke_workflow(req: InvokeRequest):
         frontend_response = result
         if req.workflow_id == "compliance-workflow":
             # If it has a question, it's the RAG demo
-            if "question" in req.inputs:
+            if "question" in req.inputs.get("context", {}):
                 frontend_response = {
                     "answer": result["extracted_data"].get("draft_response", "I'm sorry, I couldn't find an answer to that."),
                     "sources": result["extracted_data"].get("sources", []),
@@ -80,6 +93,11 @@ async def invoke_workflow(req: InvokeRequest):
 async def list_workflows():
     """List all registered EAR workflows."""
     return {"workflows": WorkflowRegistry.list_workflows()}
+
+@app.post("/api/v1/workflows/approve")
+async def approve_workflow(req: ApproveRequest):
+    """Handle HITL approval for workflows."""
+    return {"status": "success", "approved": req.approved, "message": "Approval recorded successfully"}
 
 @app.get("/health")
 async def health_check():

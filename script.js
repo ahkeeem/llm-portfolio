@@ -142,7 +142,7 @@ async function approveEmail(approved) {
     const emailText = document.getElementById("emailInput").value.trim();
 
     try {
-        const res = await fetch(`${API_URLS.email}/approve`, {
+        const res = await fetch(`${API_URLS.control_plane}/api/v1/workflows/approve`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email_text: emailText, approved })
