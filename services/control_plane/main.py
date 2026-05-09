@@ -55,13 +55,22 @@ async def invoke_workflow(req: InvokeRequest):
         # Format response for the legacy frontend
         frontend_response = result
         if req.workflow_id == "compliance-workflow":
-            frontend_response = {
-                "classification": result["extracted_data"].get("classification", ""),
-                "response": result["extracted_data"].get("draft_response", ""),
-                "privacy_scan": "FLAGGED" if result["extracted_data"].get("pii_found") else "PASSED",
-                "pii_redacted": result["extracted_data"].get("pii_found", False),
-                "requires_approval": result.get("requires_approval", False)
-            }
+            # If it has a question, it's the RAG demo
+            if "question" in req.inputs:
+                frontend_response = {
+                    "answer": result["extracted_data"].get("draft_response", "I'm sorry, I couldn't find an answer to that."),
+                    "sources": result["extracted_data"].get("sources", []),
+                    "status": "success"
+                }
+            else:
+                # Standard Email Triage
+                frontend_response = {
+                    "classification": result["extracted_data"].get("classification", ""),
+                    "response": result["extracted_data"].get("draft_response", ""),
+                    "privacy_scan": "FLAGGED" if result["extracted_data"].get("pii_found") else "PASSED",
+                    "pii_redacted": result["extracted_data"].get("pii_found", False),
+                    "requires_approval": result.get("requires_approval", False)
+                }
             
         return {"status": "success", "session_id": req.session_id, "state": frontend_response}
     except Exception as e:

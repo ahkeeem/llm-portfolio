@@ -110,6 +110,34 @@ Write a concise, professional reply."""
     state["messages"].append({"role": "system", "content": "Draft generated, pending approval."})
     return state
 
+def rag_node(state: AgentState) -> AgentState:
+    """Standard RAG node for answering policy questions."""
+    question = state["context"].get("question", "")
+    
+    # Search policies
+    policy_results = ToolRegistry.invoke("policy_search", query=question)
+    state["active_tools"].append("policy_search")
+    
+    # Store sources for the frontend
+    state["extracted_data"]["sources"] = [
+        {"content": r["text"], "metadata": {"source": "Corporate Policy v1.2", "section": "Compliance"}}
+        for r in policy_results
+    ]
+    
+    context = "\n".join([r["text"] for r in policy_results])
+    prompt = f"Answer this question using only the following context:\n\nCONTEXT:\n{context}\n\nQUESTION: {question}"
+    
+    response = call_llm(prompt)
+    state["extracted_data"]["draft_response"] = response
+    state["messages"].append({"role": "system", "content": f"Answered question using {len(policy_results)} sources."})
+    return state
+
+def route_entry(state: AgentState) -> str:
+    """Route to scan (email) or rag (question)."""
+    if "question" in state["context"]:
+        return "rag"
+    return "scan"
+
 class ComplianceWorkflow(BaseWorkflow):
     """
     Workflow for Compliance & Triage: Email routing, PII redaction, and policy validation.
@@ -118,8 +146,18 @@ class ComplianceWorkflow(BaseWorkflow):
         self.graph.add_node("scan", scan_node)
         self.graph.add_node("classify", classify_node)
         self.graph.add_node("draft", draft_node)
+        self.graph.add_node("rag", rag_node)
         
-        self.graph.set_entry_point("scan")
+        # Branching logic for the entry point
+        self.graph.set_conditional_entry_point(
+            route_entry,
+            {
+                "scan": "scan",
+                "rag": "rag"
+            }
+        )
+        
         self.graph.add_edge("scan", "classify")
         self.graph.add_edge("classify", "draft")
         self.graph.add_edge("draft", END)
+        self.graph.add_edge("rag", END)
