@@ -1,4 +1,5 @@
 const API_URLS = {
+    control_plane: "https://ear-control-plane.onrender.com",
     email: "https://email-x1cn.onrender.com",
     rag: "https://rag-gdzc.onrender.com"
 };
@@ -99,14 +100,20 @@ async function processEmail() {
     document.getElementById("demoError").style.display = "none";
 
     try {
-        const res = await fetch(`${API_URLS.email}/process`, {
+        const res = await fetch(`${API_URLS.control_plane}/api/v1/workflows/invoke`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email_text: emailText })
+            body: JSON.stringify({ 
+                workflow_id: "compliance-workflow",
+                session_id: "demo-" + Date.now(),
+                inputs: { context: { email_text: emailText } },
+                config: { requires_approval: true }
+            })
         });
 
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
+        const responseData = await res.json();
+        const data = responseData.state;
 
         document.getElementById("demoLoading").style.display = "none";
         document.getElementById("step2").style.display = "block";

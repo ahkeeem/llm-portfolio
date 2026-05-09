@@ -1,0 +1,55 @@
+services:
+  # 1. Managed Redis (Message Broker & Checkpointer)
+  - type: redis
+    name: ear-redis
+    ipAllowList: []
+    plan: free
+
+  # 2. Control Plane (FastAPI Web Service)
+  - type: web
+    name: ear-control-plane
+    env: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: START_MODE
+        value: web
+      - key: CELERY_BROKER_URL
+        fromService:
+          type: redis
+          name: ear-redis
+          property: connectionString
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          type: redis
+          name: ear-redis
+          property: connectionString
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GROQ_API_BASE
+        value: https://api.groq.com/openai/v1
+
+  # 3. Compute Plane (Celery Background Worker)
+  - type: worker
+    name: ear-compute-plane
+    env: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    envVars:
+      - key: START_MODE
+        value: worker
+      - key: CELERY_BROKER_URL
+        fromService:
+          type: redis
+          name: ear-redis
+          property: connectionString
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          type: redis
+          name: ear-redis
+          property: connectionString
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GROQ_API_BASE
+        value: https://api.groq.com/openai/v1
