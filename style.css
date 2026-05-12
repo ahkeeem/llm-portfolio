@@ -208,7 +208,7 @@ body.dark { --bg-body: var(--bg-primary); --bg-surface: var(--bg-card); --color-
 /* Preserve original parts that were not overwritten (e.g., demos, results, architecture, skills, footer) */
 /* ... rest of original stylesheet left unchanged ... */
 
-.demo-container { max-width: 800px; margin: 0 auto; }
+.demo-main-wrapper, .project-demo-section { max-width: 800px; margin: 0 auto; }
 .demo-tabs { display: flex; justify-content: center; gap: 12px; margin-bottom: 32px; flex-wrap: wrap; }
 .tab-btn { padding: 10px 24px; border-radius: 20px; font-weight: 600; font-size: .95rem; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-secondary); transition: all .2s; }
 .tab-btn:hover { color: var(--text-primary); border-color: rgba(79,143,255,.3); }

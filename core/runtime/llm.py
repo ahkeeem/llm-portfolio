@@ -33,6 +33,7 @@ print(f"✅ LLM Provider: {PROVIDER} | Model: {DEFAULT_MODEL}")
 
 
 import json
+import re
 from pydantic import BaseModel
 from typing import TypeVar, Type, Optional
 
@@ -42,8 +43,9 @@ T = TypeVar('T', bound=BaseModel)
 def call_llm_structured(prompt: str, response_model: Type[T], model: str = None) -> T:
     """
     Call LLM and enforce structured JSON output matching the provided Pydantic model.
+    Hardened to handle markdown blocks and potential LLM wrapping.
     """
-    system_prompt = f"You are a helpful assistant. You must respond in pure JSON. Adhere strictly to this schema: {response_model.schema_json()}"
+    system_prompt = f"You are a helpful assistant. You must respond in pure JSON. Adhere strictly to this schema: {response_model.model_json_schema()}"
     
     response = client.chat.completions.create(
         model=model or DEFAULT_MODEL,
@@ -63,9 +65,24 @@ def call_llm_structured(prompt: str, response_model: Type[T], model: str = None)
         )
         
     content = response.choices[0].message.content
+    if not content:
+        raise ValueError("LLM returned empty content")
+
+    # Clean potential markdown wrapping
+    content = content.strip()
+    if content.startswith("```"):
+        content = re.sub(r"```(?:json)?\n?|```", "", content).strip()
+    
     try:
         data = json.loads(content)
-        return response_model(**data)
+        # Some LLMs wrap the JSON in a top-level key like 'classification' or 'data'
+        if len(data) == 1 and isinstance(list(data.values())[0], dict):
+             # If the schema doesn't have this top-level key but the data does, unwrap it
+             first_key = list(data.keys())[0]
+             if first_key.lower() not in response_model.model_fields:
+                 data = data[first_key]
+                 
+        return response_model.model_validate(data)
     except Exception as e:
         logger.error(f"Failed to parse LLM structured output: {e}\nContent: {content}")
         raise

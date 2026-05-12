@@ -79,7 +79,10 @@ async function processEmail() {
             })
         });
 
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(errorData.detail || `Server Error (HTTP ${res.status})`);
+        }
         const responseData = await res.json();
         const data = responseData.state;
 
@@ -109,10 +112,15 @@ async function processEmail() {
 
         const prBadge = document.getElementById("priorityBadge");
         prBadge.textContent = priority;
-        prBadge.className = `class-value ${priority}`;
+        prBadge.className = `class-value ${priority.toLowerCase()}`;
         document.getElementById("typeBadge").textContent = type;
         document.getElementById("rawClassification").textContent = classification;
-        document.getElementById("draftResponse").textContent = data.response;
+        
+        // Use a simple formatter for better rendering
+        const formattedResponse = data.response
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\n/g, '<br>');
+        document.getElementById("draftResponse").innerHTML = formattedResponse;
 
         // Update Privacy Badge
         const privBadge = document.getElementById("privacyBadge");
@@ -199,13 +207,23 @@ document.querySelectorAll(".skill-group").forEach(el => observer.observe(el));
 function switchDemo(type) {
     // Update tabs
     document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
-    document.getElementById(`tab-${type}`).classList.add("active");
+    const activeTab = document.getElementById(`tab-${type}`);
+    if (activeTab) activeTab.classList.add("active");
 
-    // Hide all containers
-    document.querySelectorAll(".demo-container").forEach(c => c.style.display = "none");
+    // Hide all project sections
+    document.querySelectorAll(".project-demo-section").forEach(c => c.style.display = "none");
     
-    // Show selected
-    document.getElementById(`demo-${type}`).style.display = "block";
+    // Show selected project section
+    const targetSection = document.getElementById(`demo-${type}`);
+    if (targetSection) {
+        targetSection.style.display = "block";
+        // Scroll to the demo container for better UX
+        targetSection.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+    
+    // Ensure the main wrapper is visible
+    const wrapper = document.getElementById("demoContent");
+    if (wrapper) wrapper.style.display = "block";
 }
 
 // === RAG Demo ===
