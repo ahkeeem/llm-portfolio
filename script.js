@@ -9,14 +9,44 @@ async function fetchLiveMetrics() {
     try {
         const res = await fetch(`${API_URLS.control_plane}/health`, { signal: AbortSignal.timeout(3000) });
         if (res.ok) {
-            // Mocking live counts based on session usage or a central counter
             const data = await res.json();
-            // In production, /health or a /metrics endpoint would return real token counts
-            document.getElementById("liveTokens").textContent = "12,450";
-            document.getElementById("liveCost").textContent = "$0.0012";
-            document.getElementById("liveRequests").textContent = "42";
+            const m = data.metrics;
+
+            if (m) {
+                // Update Hero Stats
+                document.getElementById("liveTokens").textContent = m.counters.tokens_total.toLocaleString();
+                document.getElementById("liveCost").textContent = `$${m.cost_estimate_usd.toFixed(4)}`;
+                document.getElementById("liveRequests").textContent = m.counters.requests_total;
+
+                // Update Architecture Stats (Per Project)
+                const projects = m.per_project || {};
+                if (document.getElementById("budgetRag")) {
+                    document.getElementById("budgetRag").textContent = (projects["rag-advisor"]?.total || 0).toLocaleString();
+                }
+                if (document.getElementById("budgetEmail")) {
+                    document.getElementById("budgetEmail").textContent = (projects["email-triage"]?.total || 0).toLocaleString();
+                }
+                if (document.getElementById("budgetTotal")) {
+                    document.getElementById("budgetTotal").textContent = `$${m.cost_estimate_usd.toFixed(4)}`;
+                }
+
+                // Update Model Breakdown
+                const modelTable = document.getElementById("modelUsageTable");
+                if (modelTable) {
+                    const modelData = m.per_model || {};
+                    const models = Object.keys(modelData);
+                    if (models.length > 0) {
+                        modelTable.innerHTML = models.map(name => `
+                            <div class="budget-row">
+                                <span>${name}</span>
+                                <span class="budget-value">${modelData[name].total.toLocaleString()}</span>
+                            </div>
+                        `).join('');
+                    }
+                }
+            }
         }
-    } catch {}
+    } catch { }
 }
 
 // Fetch on load and every 15 seconds
@@ -71,7 +101,7 @@ async function processEmail() {
         const res = await fetch(`${API_URLS.control_plane}/api/v1/workflows/invoke`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ 
+            body: JSON.stringify({
                 workflow_id: "compliance-workflow",
                 session_id: "demo-" + Date.now(),
                 inputs: { context: { email_text: emailText } },
@@ -93,7 +123,7 @@ async function processEmail() {
         let classification = data.classification || "";
         let priority = "—";
         let type = "—";
-        
+
         // Handle new string format: "Priority: URGENT | Type: COMPLAINT"
         if (typeof classification === "string" && classification.includes("|")) {
             const parts = classification.split("|");
@@ -115,7 +145,7 @@ async function processEmail() {
         prBadge.className = `class-value ${priority.toLowerCase()}`;
         document.getElementById("typeBadge").textContent = type;
         document.getElementById("rawClassification").textContent = classification;
-        
+
         // Use a simple formatter for better rendering
         const formattedResponse = data.response
             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
@@ -212,7 +242,7 @@ function switchDemo(type) {
 
     // Hide all project sections
     document.querySelectorAll(".project-demo-section").forEach(c => c.style.display = "none");
-    
+
     // Show selected project section
     const targetSection = document.getElementById(`demo-${type}`);
     if (targetSection) {
@@ -220,7 +250,7 @@ function switchDemo(type) {
         // Scroll to the demo container for better UX
         targetSection.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
-    
+
     // Ensure the main wrapper is visible
     const wrapper = document.getElementById("demoContent");
     if (wrapper) wrapper.style.display = "block";
@@ -250,7 +280,7 @@ async function processRag() {
         const res = await fetch(`${API_URLS.control_plane}/api/v1/workflows/invoke`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ 
+            body: JSON.stringify({
                 workflow_id: "compliance-workflow",
                 session_id: "rag-" + Date.now(),
                 inputs: { context: { question } }
@@ -262,9 +292,9 @@ async function processRag() {
 
         document.getElementById("ragLoading").style.display = "none";
         document.getElementById("ragStep2").style.display = "block";
-        
+
         document.getElementById("ragAnswer").textContent = data.answer;
-        
+
         // Render sources nicely
         const sourcesHtml = (data.sources || []).map((src, index) => `
             <div class="result-card" style="padding: 16px;">
@@ -343,7 +373,7 @@ async function processEval() {
 
         document.getElementById("evalLoading").style.display = "none";
         document.getElementById("evalResults").style.display = "block";
-        
+
         let scoresHtml = '';
         // Simulating the legacy formatting for the aggregate scores
         const mockAggregate = {
@@ -352,14 +382,14 @@ async function processEval() {
             avg_pii_safety: 1.0,
             total_requests: 124
         };
-        
+
         scoresHtml = Object.entries(mockAggregate).map(([key, value]) => `
             <div class="class-badge">
                 <span class="class-label">${key.replace(/_/g, ' ')}</span>
                 <span class="class-value ${typeof value === 'number' && value >= 0.85 ? 'low' : (typeof value === 'number' && value >= 0.7 ? 'normal' : 'urgent')}">${typeof value === 'number' && key.startsWith('avg_') ? (value * 100).toFixed(1) + '%' : value}</span>
             </div>
         `).join('');
-        
+
         document.getElementById("evalScores").innerHTML = scoresHtml;
         document.getElementById("evalFlagged").textContent = "All production traces cleared compliance scan.";
 
@@ -429,7 +459,7 @@ async function processReceipt() {
 
         document.getElementById("receiptLoading").style.display = "none";
         document.getElementById("receiptStep2").style.display = "block";
-        
+
         let fieldsHtml = Object.entries(fields).map(([key, value]) => `
             <div class="class-badge" style="flex-basis: 45%; margin-bottom: 12px;">
                 <span class="class-label">${key}</span>

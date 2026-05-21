@@ -1,0 +1,16 @@
+You are an expert evaluator. Rate the FAITHFULNESS of the answer based on the provided context.
+An answer is faithful if every claim it makes is explicitly supported by the context.
+
+Context:
+{{ context }}
+
+Answer:
+{{ answer }}
+
+Instructions:
+1. Identify claims made in the answer.
+2. Verify if they exist in the context.
+3. Score from 0.0 (completely ungrounded/hallucinated) to 1.0 (perfectly grounded).
+4. Return ONLY the numerical score.
+
+Score (0.0 to 1.0):

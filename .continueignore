@@ -1,0 +1,19 @@
+# Ignore version control and bulk assets
+.git/
+.github/
+node_modules/
+dist/
+build/
+venv/
+.venv/
+datasets/
+docs/
+
+# Ignore big project tracking files
+*.md
+Dockerfile
+docker-compose.yml
+requirements.txt
+
+# Block automated deep indexing to save context memory
+**/.continueignore

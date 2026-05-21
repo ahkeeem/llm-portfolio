@@ -20,7 +20,7 @@ Assume a table named 'sales' with columns: 'id', 'date', 'revenue', 'region'.
 
 Question: {question}"""
 
-    sql_res = call_llm_structured(prompt, SqlGeneration)
+    sql_res = call_llm_structured(prompt, SqlGeneration, project="analytics-workflow")
     state["extracted_data"]["generated_sql"] = sql_res.sql_query
     state["extracted_data"]["sql_explanation"] = sql_res.explanation
     

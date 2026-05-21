@@ -83,7 +83,7 @@ Email:
 {contextual_text}"""
 
     from core.runtime.llm import call_llm_structured
-    classification_obj = call_llm_structured(prompt, ClassificationResponse)
+    classification_obj = call_llm_structured(prompt, ClassificationResponse, project="email-triage")
     
     classification_str = f"Priority: {classification_obj.priority.upper()} | Type: {classification_obj.type.upper()}"
     state["extracted_data"]["classification"] = classification_str
@@ -104,7 +104,7 @@ Classification:
 
 Write a concise, professional reply."""
 
-    response = call_llm(prompt)
+    response = call_llm(prompt, project="email-triage")
     state["extracted_data"]["draft_response"] = response
     state["requires_approval"] = True
     state["messages"].append({"role": "system", "content": "Draft generated, pending approval."})
@@ -127,7 +127,7 @@ def rag_node(state: AgentState) -> AgentState:
     context = "\n".join([r["text"] for r in policy_results])
     prompt = f"Answer this question using only the following context:\n\nCONTEXT:\n{context}\n\nQUESTION: {question}"
     
-    response = call_llm(prompt)
+    response = call_llm(prompt, project="rag-advisor")
     state["extracted_data"]["draft_response"] = response
     state["messages"].append({"role": "system", "content": f"Answered question using {len(policy_results)} sources."})
     return state

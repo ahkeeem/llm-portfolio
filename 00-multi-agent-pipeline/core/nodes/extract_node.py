@@ -1,11 +1,16 @@
 import sys
 import os
 
-# Add relevant paths so we can import from original projects
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../03-edge-ai-extraction")))
+project_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../03-edge-ai-extraction"))
+if project_path not in sys.path:
+    sys.path.insert(0, project_path)
 
 from core.inference import extract_receipt_fields
 from app.state import AgentState
+
+# Clean up path to prevent namespace collisions
+if sys.path[0] == project_path:
+    sys.path.pop(0)
 
 def extract_node(state: AgentState):
     """

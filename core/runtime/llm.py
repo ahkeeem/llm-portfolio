@@ -40,7 +40,7 @@ from typing import TypeVar, Type, Optional
 T = TypeVar('T', bound=BaseModel)
 
 @retry(wait=wait_exponential(multiplier=1, min=2, max=10), stop=stop_after_attempt(3))
-def call_llm_structured(prompt: str, response_model: Type[T], model: str = None) -> T:
+def call_llm_structured(prompt: str, response_model: Type[T], model: str = None, project: str = "unknown") -> T:
     """
     Call LLM and enforce structured JSON output matching the provided Pydantic model.
     Hardened to handle markdown blocks and potential LLM wrapping.
@@ -62,6 +62,8 @@ def call_llm_structured(prompt: str, response_model: Type[T], model: str = None)
         metrics.record_tokens(
             prompt_tokens=usage.prompt_tokens or 0,
             completion_tokens=usage.completion_tokens or 0,
+            model=model or DEFAULT_MODEL,
+            project=project
         )
         
     content = response.choices[0].message.content
@@ -88,7 +90,7 @@ def call_llm_structured(prompt: str, response_model: Type[T], model: str = None)
         raise
 
 @retry(wait=wait_exponential(multiplier=1, min=2, max=10), stop=stop_after_attempt(3))
-def call_llm(prompt: str, model: str = None, temperature: float = 0.3) -> str:
+def call_llm(prompt: str, model: str = None, temperature: float = 0.3, project: str = "unknown") -> str:
     """Call LLM with retry-friendly defaults and token tracking."""
     response = client.chat.completions.create(
         model=model or DEFAULT_MODEL,
@@ -102,6 +104,8 @@ def call_llm(prompt: str, model: str = None, temperature: float = 0.3) -> str:
         metrics.record_tokens(
             prompt_tokens=usage.prompt_tokens or 0,
             completion_tokens=usage.completion_tokens or 0,
+            model=model or DEFAULT_MODEL,
+            project=project
         )
 
     return response.choices[0].message.content

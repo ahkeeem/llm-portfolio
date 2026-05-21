@@ -12,6 +12,7 @@ class AgentState(TypedDict):
     # --- Agent 2: Policy Analyst Outputs ---
     policy_verdict: str         # The RAG-generated answer
     policy_citations: List[str]  # Sources from the Vector DB
+    policy_context: str         # The raw retrieved context chunks
     
     # --- Agent 3: Internal Auditor Outputs ---
     audit_scores: Dict[str, float] # {faithfulness: 0.9, relevancy: 0.8}
