@@ -8,7 +8,6 @@ Prerequisites:
     pip install datasets
 """
 
-import json
 import os
 
 

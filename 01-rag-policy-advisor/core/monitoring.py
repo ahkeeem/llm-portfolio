@@ -10,7 +10,6 @@ import time
 import threading
 from datetime import datetime
 from functools import wraps
-from typing import Any
 
 
 class MetricsCollector:
@@ -100,7 +99,7 @@ def track_endpoint(endpoint_name: str):
             try:
                 result = fn(*args, **kwargs)
                 return result
-            except Exception as exc:
+            except Exception:
                 metrics.record_error(endpoint_name)
                 raise
             finally:

@@ -1,4 +1,3 @@
-import os
 from chromadb.utils import embedding_functions
 
 # Patch ChromaDB's hardcoded cache path to be inside the workspace
