@@ -18,21 +18,21 @@ def audit_node(state: AgentState):
     Audits the generated policy answer against faithfulness and relevancy standards.
     """
     print("--- AGENT 3: AUDITING POLICY RESPONSE ---")
-    
+
     answer = state.get("policy_verdict", "")
     context = state.get("policy_context", "")
     question = state.get("raw_input", "")
-    
+
     faithfulness = score_faithfulness(answer, context)
     relevancy = score_relevancy(answer, question)
-    
+
     avg_score = (faithfulness + relevancy) / 2
     passed = avg_score >= 0.75
-    
+
     feedback = ""
     if not passed:
         feedback = f"Faithfulness score ({faithfulness}) or Relevancy score ({relevancy}) is below target threshold of 0.75. Please ground your response better in the context and answer the prompt directly."
-        
+
     return {
         "audit_scores": {"faithfulness": faithfulness, "relevancy": relevancy},
         "audit_passed": passed,

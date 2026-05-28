@@ -18,11 +18,11 @@ def triage_node(state: AgentState):
     Drafts the final response incorporating the audited policy verdict.
     """
     print("--- AGENT 4: TRIAGING & DRAFTING EMAIL ---")
-    
+
     raw_email = state["raw_input"]
     verdict = state.get("policy_verdict", "No specific policy details found.")
     extracted = state.get("extracted_data", {})
-    
+
     prompt = f"""You are a professional customer support representative.
 Write a professional, polite, and clear email response to the customer.
 
@@ -44,7 +44,7 @@ Instructions:
 Final Email Draft:"""
 
     response = call_llm(prompt)
-    
+
     return {
         "final_email_draft": response,
         "requires_approval": True,

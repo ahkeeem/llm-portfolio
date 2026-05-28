@@ -3,7 +3,7 @@ from app.state import AgentState
 
 def should_retry_policy(state: AgentState):
     """
-    Conditional logic: If Auditor (Agent 3) fails the draft, 
+    Conditional logic: If Auditor (Agent 3) fails the draft,
     route back to Analyst (Agent 2) for re-reasoning.
     Max 3 revision attempts before escalating to human.
     """
@@ -15,7 +15,7 @@ def should_retry_policy(state: AgentState):
 def create_pipeline():
     """
     Build and compile the 4-agent LangGraph pipeline.
-    
+
     Imports are deferred to runtime so the module can be imported
     for unit testing even when langgraph or project dependencies
     are not installed.
@@ -52,5 +52,5 @@ def create_pipeline():
     )
 
     workflow.add_edge("triage", END)
-    
+
     return workflow.compile()

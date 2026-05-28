@@ -44,12 +44,12 @@ def _normalize_keys(data: Any, model: Type[BaseModel]) -> Any:
         return data
     normalized = {}
     model_fields = model.model_fields
-    
+
     # Try exact matches first
     for field_name in model_fields:
         if field_name in data:
             normalized[field_name] = data[field_name]
-            
+
     # Try case-insensitive or partial matches for unmatched fields
     for field_name in model_fields:
         if field_name in normalized:
@@ -91,12 +91,12 @@ def _normalize_keys(data: Any, model: Type[BaseModel]) -> Any:
                         break
                 if matched:
                     break
-                    
+
     # Retain other keys just in case model accepts extra
     for k, v in data.items():
         if k not in normalized:
             normalized[k] = v
-            
+
     return normalized
 
 @retry(wait=wait_exponential(multiplier=1, min=2, max=10), stop=stop_after_attempt(3))
@@ -106,7 +106,7 @@ def call_llm_structured(prompt: str, response_model: Type[T], model: str = None,
     Hardened to handle markdown blocks and potential LLM wrapping.
     """
     system_prompt = f"You are a helpful assistant. You must respond in pure JSON. Adhere strictly to this schema: {response_model.model_json_schema()}"
-    
+
     response = client.chat.completions.create(
         model=model or DEFAULT_MODEL,
         messages=[
@@ -116,7 +116,7 @@ def call_llm_structured(prompt: str, response_model: Type[T], model: str = None,
         temperature=0.0,
         response_format={"type": "json_object"}
     )
-    
+
     usage = getattr(response, "usage", None)
     if usage:
         metrics.record_tokens(
@@ -125,7 +125,7 @@ def call_llm_structured(prompt: str, response_model: Type[T], model: str = None,
             model=model or DEFAULT_MODEL,
             project=project
         )
-        
+
     content = response.choices[0].message.content
     if not content:
         raise ValueError("LLM returned empty content")
@@ -134,7 +134,7 @@ def call_llm_structured(prompt: str, response_model: Type[T], model: str = None,
     content = content.strip()
     if content.startswith("```"):
         content = re.sub(r"```(?:json)?\n?|```", "", content).strip()
-    
+
     try:
         data = json.loads(content)
         # Some LLMs wrap the JSON in a top-level key like 'classification' or 'data'
@@ -143,7 +143,7 @@ def call_llm_structured(prompt: str, response_model: Type[T], model: str = None,
              first_key = list(data.keys())[0]
              if first_key.lower() not in response_model.model_fields:
                   data = data[first_key]
-                  
+
         # Normalize the dictionary keys to prevent Pydantic ValidationError
         data = _normalize_keys(data, response_model)
         return response_model.model_validate(data)

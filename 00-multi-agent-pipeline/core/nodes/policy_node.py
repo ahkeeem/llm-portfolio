@@ -18,17 +18,17 @@ def policy_node(state: AgentState):
     Retrieves policy evidence and generates a verdict.
     """
     print("--- AGENT 2: ANALYZING POLICY ---")
-    
+
     extracted = state.get("extracted_data", {})
     # Build query based on extracted claim
     company = extracted.get("company", "TechFlow Solutions")
     total = extracted.get("total", "unknown amount")
     item = extracted.get("item", "purchase")
-    
+
     query = f"What is the refund policy for {item} from {company} with total {total}?"
-    
+
     result = query_rag(query)
-    
+
     return {
         "policy_verdict": result.get("answer", ""),
         "policy_citations": [src["metadata"].get("source", "Policy document") for src in result.get("sources", [])],

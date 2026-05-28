@@ -11,7 +11,7 @@ def run_demo():
     print("==================================================")
     print("🚀 Running Autonomous Compliance Desk Demo Pipeline")
     print("==================================================")
-    
+
     # 1. Initialize State
     initial_state = {
         "raw_input": "Dear Whole Foods support, I purchased Organic Apples and Almond Milk on 05/15/2026 for $11.48 at store #10402 in SF. I need a refund as the item was bad.",
@@ -31,15 +31,15 @@ def run_demo():
         "revision_count": 0,
         "status": "starting"
     }
-    
+
     # 2. Compile Pipeline
     app_graph = create_pipeline()
-    
+
     # 3. Execute
     print(f"Initial State Inquiry:\n\"{initial_state['raw_input']}\"\n")
-    
+
     final_state = app_graph.invoke(initial_state)
-    
+
     print("\n==================================================")
     print("🏁 Pipeline Run Complete. Final State Outputs:")
     print("==================================================")

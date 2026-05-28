@@ -32,18 +32,18 @@ async def process_document(file: UploadFile = File(...)):
     """
     if not file.content_type.startswith("image/"):
         raise HTTPException(400, "File must be an image")
-        
+
     contents = await file.read()
     image = Image.open(io.BytesIO(contents)).convert("RGB")
-    
+
     # Run the Local-First Pipeline (Modules A, B, C)
     sanitized_json, redacted_img, requires_review = processor_engine.process_document(image)
-    
+
     # Convert redacted image to base64 for easy API consumption
     buffered = io.BytesIO()
     redacted_img.save(buffered, format="JPEG")
     img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
-    
+
     # The JSON Schema Generator
     return JSONResponse({
         "status": "success",

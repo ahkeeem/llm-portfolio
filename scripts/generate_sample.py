@@ -3,15 +3,15 @@ import pandas as pd
 
 def generate_samples():
     print("--- Starting Heavy Dataset Sampling (RAM Load Balanced) ---")
-    
+
     # Target directory
     target_dir = "data/samples"
     os.makedirs(target_dir, exist_ok=True)
-    
+
     # 1. Sample Enron Email Dataset
     email_raw = "datasets/compliance/raw/emails.csv"
     email_sample_path = os.path.join(target_dir, "emails_sample.csv")
-    
+
     if os.path.exists(email_raw):
         print(f"Sampling Enron email corpus from: {email_raw}")
         # Load balanced reading: only read first chunk of 500 rows to limit memory
@@ -25,7 +25,7 @@ def generate_samples():
     # 2. Sample Credit Card Dataset
     credit_raw = "datasets/analytics/raw/creditcard.csv"
     credit_sample_path = os.path.join(target_dir, "creditcard_sample.csv")
-    
+
     if os.path.exists(credit_raw):
         print(f"Sampling credit card corpus from: {credit_raw}")
         # Load balanced reading: only read first chunk of 200 rows
@@ -39,7 +39,7 @@ def generate_samples():
     # 3. Sample Financial Dataset
     fin_raw_dir = "datasets/financial/raw"
     fin_sample_path = os.path.join(target_dir, "financial_sample.csv")
-    
+
     if os.path.exists(fin_raw_dir) and os.listdir(fin_raw_dir):
         # Pick the first available quarterly filing csv
         filing_files = sorted([f for f in os.listdir(fin_raw_dir) if f.endswith(".csv")])

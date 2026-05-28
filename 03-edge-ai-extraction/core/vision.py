@@ -11,7 +11,7 @@ class DocumentProcessor:
         # self.processor = LayoutLMv3Processor.from_pretrained("nielsr/layoutlmv3-finetuned-funsd")
         # self.model = LayoutLMv3ForTokenClassification.from_pretrained("nielsr/layoutlmv3-finetuned-funsd")
         pass
-        
+
     def _calculate_distance(self, box1: List[int], box2: List[int]) -> float:
         """Module A: Spatial distance calculation between bounding box centers."""
         x1_center = (box1[0] + box1[2]) / 2
@@ -22,7 +22,7 @@ class DocumentProcessor:
 
     def process_document(self, image: Image.Image) -> Tuple[Dict, Image.Image, bool]:
         """
-        Processes a document through Module A (Extraction), Module B (Redaction), 
+        Processes a document through Module A (Extraction), Module B (Redaction),
         and Module C (Human-in-the-loop).
         """
         # Simulated extraction data representing a LayoutLMv3 forward pass on FUNSD
@@ -35,12 +35,12 @@ class DocumentProcessor:
             {"text": "Date of Birth:", "label": "QUESTION", "box": [50, 150, 180, 180], "confidence": 0.97},
             {"text": "01/01/1990", "label": "ANSWER", "box": [190, 150, 320, 180], "confidence": 0.94},
         ]
-        
+
         # --- MODULE A: Intelligent Extraction Engine (Spatial Linking) ---
         linked_data = []
         questions = [d for d in extracted_data if d["label"] == "QUESTION"]
         answers = [d for d in extracted_data if d["label"] == "ANSWER"]
-        
+
         for q in questions:
             best_a = None
             min_dist = float('inf')
@@ -51,27 +51,27 @@ class DocumentProcessor:
                     best_a = a
             if best_a:
                 linked_data.append({
-                    "question": q["text"], 
-                    "answer": best_a["text"], 
+                    "question": q["text"],
+                    "answer": best_a["text"],
                     "confidence": best_a["confidence"],
                     "box": best_a["box"]
                 })
-                
+
         # --- MODULE B & C: Privacy Layer & Gateway ---
         cv_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
         requires_review = False
         sanitized_fields = []
-        
+
         for field in linked_data:
             # Module C: Human-in-the-loop Confidence Gateway
             if field["confidence"] < 0.85:
                 requires_review = True
-                
+
             # Module B: Privacy & Redaction Layer (Masking ANSWER boxes)
             x1, y1, x2, y2 = field["box"]
             # Apply solid black mask
             cv2.rectangle(cv_image, (x1, y1), (x2, y2), (0, 0, 0), -1)
-            
+
             # Sanitization: Delete original text from OCR metadata
             sanitized_fields.append({
                 "field_name": field["question"],
@@ -79,14 +79,14 @@ class DocumentProcessor:
                 "confidence_score": field["confidence"],
                 "status": "FLAGGED_FOR_REVIEW" if field["confidence"] < 0.85 else "PROCESSED"
             })
-            
+
         sanitized_json = {
             "document_status": "MANUAL_REVIEW_REQUIRED" if requires_review else "CLEARED",
             "extracted_fields": sanitized_fields
         }
-        
+
         redacted_image = Image.fromarray(cv2.cvtColor(cv_image, cv2.COLOR_BGR2RGB))
-        
+
         return sanitized_json, redacted_image, requires_review
 
 processor_engine = DocumentProcessor()

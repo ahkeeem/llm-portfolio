@@ -27,11 +27,11 @@ Contract:
 Standard Vendor Agreement without a limitation of liability clause."""
 
     review = call_llm_structured(prompt, ContractReview)
-    
+
     state["extracted_data"]["risk_level"] = review.risk_level
     state["extracted_data"]["missing_clauses"] = review.missing_clauses
     state["extracted_data"]["flagged_terms"] = review.flagged_terms
-    
+
     state["requires_approval"] = True if review.risk_level.lower() == "high" else False
     state["messages"].append({"role": "system", "content": f"Contract reviewed. Risk: {review.risk_level}"})
     return state
@@ -43,7 +43,7 @@ class LegalWorkflow(BaseWorkflow):
     def _build_graph(self):
         self.graph.add_node("extract", extract_clauses_node)
         self.graph.add_node("classify", classify_risk_node)
-        
+
         self.graph.set_entry_point("extract")
         self.graph.add_edge("extract", "classify")
         self.graph.add_edge("classify", END)

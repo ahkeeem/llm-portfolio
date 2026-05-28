@@ -18,7 +18,7 @@ model = "llama-3.1-8b-instant"
 def test_structured():
     prompt = "Classify this email: 'I need a refund for my order #123'. Priority: urgent, normal, low. Type: complaint, request, info."
     system_prompt = f"You are a helpful assistant. You must respond in pure JSON. Adhere strictly to this schema: {ClassificationResponse.schema_json()}"
-    
+
     try:
         response = client.chat.completions.create(
             model=model,

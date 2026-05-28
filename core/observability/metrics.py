@@ -58,7 +58,7 @@ class MetricsCollector:
             self._counters["tokens_completion"] += completion_tokens
             self._counters["tokens_total"] += prompt_tokens + completion_tokens
             self._counters["llm_calls"] += 1
-            
+
             # Per-model tracking
             if model not in self._per_model:
                 self._per_model[model] = {"prompt": 0, "completion": 0, "total": 0, "calls": 0}
@@ -97,7 +97,7 @@ class MetricsCollector:
                     rate_p, rate_c = 0.05, 0.08 # $ per 1M
                 else:
                     rate_p, rate_c = 0.10, 0.20 # Default
-                
+
                 total_cost_usd += (usage["prompt"] * rate_p / 1_000_000)
                 total_cost_usd += (usage["completion"] * rate_c / 1_000_000)
 

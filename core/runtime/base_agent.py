@@ -12,7 +12,7 @@ class BaseWorkflow(ABC):
     Base abstraction for any domain workflow in the Enterprise Agent Runtime.
     Provides standard graph initialization, compilation, and invocation.
     """
-    
+
     def __init__(self, name: str):
         self.name = name
         self.graph = StateGraph(AgentState)
@@ -29,19 +29,19 @@ class BaseWorkflow(ABC):
         """Invoke the compiled graph with centralized telemetry/tracing hooks."""
         logger.info(f"Starting workflow trace: {self.name} | Session: {state.get('session_id')}")
         start_time = time.time()
-        
+
         try:
             # Here we would initialize the Langfuse/OpenTelemetry span
             result = self.compiled_graph.invoke(state, config=config)
-            
+
             elapsed_ms = (time.time() - start_time) * 1000
             logger.info(f"Workflow {self.name} completed successfully in {elapsed_ms:.2f}ms")
-            
+
             # Record execution time in metadata
             if "metadata" not in result:
                 result["metadata"] = {}
             result["metadata"]["latency_ms"] = elapsed_ms
-            
+
             return result
         except Exception as e:
             elapsed_ms = (time.time() - start_time) * 1000

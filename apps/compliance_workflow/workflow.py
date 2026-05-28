@@ -39,16 +39,16 @@ def scan_node(state: AgentState) -> AgentState:
     """Redact PII before LLM sees it."""
     email_text = state["context"].get("email_text", "")
     redacted, pii_types = _redact_pii(email_text)
-    
+
     if pii_types:
         metrics.record_pii(pii_types)
-        
+
     state["extracted_data"]["redacted_text"] = redacted
     state["extracted_data"]["pii_types"] = pii_types
     state["extracted_data"]["pii_found"] = len(pii_types) > 0
-    
+
     state["context"]["contextual_text"] = f"COMPANY CONTEXT:\n{COMPANY_INFO}\n\nEMAIL TO PROCESS:\n{redacted}"
-    
+
     state["messages"].append({"role": "system", "content": f"PII scan complete. Types found: {pii_types}"})
     return state
 
@@ -64,14 +64,14 @@ class ClassificationResponse(BaseModel):
 
 def classify_node(state: AgentState) -> AgentState:
     contextual_text = state["context"]["contextual_text"]
-    
+
     # Dynamically invoke policy search from the centralized registry
     policy_results = ToolRegistry.invoke("policy_search", query=contextual_text)
     state["active_tools"].append("policy_search")
-    
+
     # Inject retrieved policy into prompt
     policy_context = "\n".join([f"- {r['text']}" for r in policy_results])
-    
+
     prompt = f"""Classify the email. You must output a JSON object containing exactly the keys "priority" and "type".
 - "priority" must be one of: urgent, normal, low
 - "type" must be one of: complaint, request, info
@@ -84,7 +84,7 @@ Email:
 
     from core.runtime.llm import call_llm_structured
     classification_obj = call_llm_structured(prompt, ClassificationResponse, project="email-triage")
-    
+
     classification_str = f"Priority: {classification_obj.priority.upper()} | Type: {classification_obj.type.upper()}"
     state["extracted_data"]["classification"] = classification_str
     state["messages"].append({"role": "system", "content": f"Email classified. Referenced {len(policy_results)} policies."})
@@ -93,7 +93,7 @@ Email:
 def draft_node(state: AgentState) -> AgentState:
     classification = state["extracted_data"]["classification"]
     contextual_text = state["context"]["contextual_text"]
-    
+
     prompt = f"""You are a professional assistant.
 
 Email Context:
@@ -113,20 +113,20 @@ Write a concise, professional reply."""
 def rag_node(state: AgentState) -> AgentState:
     """Standard RAG node for answering policy questions."""
     question = state["context"].get("question", "")
-    
+
     # Search policies
     policy_results = ToolRegistry.invoke("policy_search", query=question)
     state["active_tools"].append("policy_search")
-    
+
     # Store sources for the frontend
     state["extracted_data"]["sources"] = [
         {"content": r["text"], "metadata": {"source": "Corporate Policy v1.2", "section": "Compliance"}}
         for r in policy_results
     ]
-    
+
     context = "\n".join([r["text"] for r in policy_results])
     prompt = f"Answer this question using only the following context:\n\nCONTEXT:\n{context}\n\nQUESTION: {question}"
-    
+
     response = call_llm(prompt, project="rag-advisor")
     state["extracted_data"]["draft_response"] = response
     state["messages"].append({"role": "system", "content": f"Answered question using {len(policy_results)} sources."})
@@ -147,7 +147,7 @@ class ComplianceWorkflow(BaseWorkflow):
         self.graph.add_node("classify", classify_node)
         self.graph.add_node("draft", draft_node)
         self.graph.add_node("rag", rag_node)
-        
+
         # Branching logic for the entry point
         self.graph.set_conditional_entry_point(
             route_entry,
@@ -156,7 +156,7 @@ class ComplianceWorkflow(BaseWorkflow):
                 "rag": "rag"
             }
         )
-        
+
         self.graph.add_edge("scan", "classify")
         self.graph.add_edge("classify", "draft")
         self.graph.add_edge("draft", END)

@@ -19,10 +19,10 @@ def extract_node(state: AgentState):
     """
     print("--- AGENT 1: EXTRACTING DATA ---")
     raw_input = state["raw_input"]
-    
+
     # Call original Project 3 logic
     result = extract_receipt_fields(raw_input)
-    
+
     # Update state
     return {
         "extracted_data": result.get("fields", {}),

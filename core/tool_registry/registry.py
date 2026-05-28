@@ -29,7 +29,7 @@ class ToolRegistry:
         """Invoke a tool asynchronously with observability hooks."""
         if name not in cls._tools:
             raise ValueError(f"Tool '{name}' not found in registry.")
-        
+
         tool = cls._tools[name]
         logger.info(f"Invoking tool: {name}")
         try:
@@ -48,7 +48,7 @@ class ToolRegistry:
         """Synchronous tool invocation."""
         if name not in cls._tools:
             raise ValueError(f"Tool '{name}' not found in registry.")
-        
+
         tool = cls._tools[name]
         logger.info(f"Invoking tool (sync): {name}")
         try:

@@ -11,13 +11,13 @@ def async_ocr_extraction(self, document_path: str) -> dict:
     In production, this would load a local Phi-3-mini or PyTesseract instance.
     """
     logger.info(f"Starting async OCR extraction for: {document_path}")
-    
+
     # Simulate heavy CPU processing
     time.sleep(5)
-    
+
     # Mock extracted text
     extracted_text = f"Mock extracted text from {document_path}. Policy ID: 12345."
-    
+
     logger.info(f"Finished OCR extraction for: {document_path}")
     return {
         "status": "success",
@@ -32,10 +32,10 @@ def async_vector_indexing(self, documents: list) -> dict:
     Simulates heavy chunking and embedding generation for ChromaDB/Pinecone.
     """
     logger.info(f"Starting vector indexing for {len(documents)} documents.")
-    
+
     # Simulate heavy GPU/CPU processing
     time.sleep(3)
-    
+
     logger.info(f"Finished vector indexing.")
     return {
         "status": "success",
