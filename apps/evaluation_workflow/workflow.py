@@ -13,10 +13,10 @@ from langgraph.graph import END
 
 
 class EvalScore(BaseModel):
-    faithfulness: float
-    relevance: float
-    correctness: float
-    reasoning: str
+    faithfulness: float = 0.5
+    relevance: float = 0.5
+    correctness: float = 0.5
+    reasoning: str = ""
 
 
 # A small built-in test set so the evaluator always has real questions to grade

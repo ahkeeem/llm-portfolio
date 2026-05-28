@@ -59,8 +59,8 @@ import core.tool_registry.tools
 from pydantic import BaseModel
 
 class ClassificationResponse(BaseModel):
-    priority: str
-    type: str
+    priority: str = "normal"
+    type: str = "info"
 
 def classify_node(state: AgentState) -> AgentState:
     contextual_text = state["context"]["contextual_text"]
@@ -72,9 +72,9 @@ def classify_node(state: AgentState) -> AgentState:
     # Inject retrieved policy into prompt
     policy_context = "\n".join([f"- {r['text']}" for r in policy_results])
     
-    prompt = f"""Classify the email into:
-priority: urgent, normal, low
-type: complaint, request, info
+    prompt = f"""Classify the email. You must output a JSON object containing exactly the keys "priority" and "type".
+- "priority" must be one of: urgent, normal, low
+- "type" must be one of: complaint, request, info
 
 Consider these company policies when classifying:
 {policy_context}

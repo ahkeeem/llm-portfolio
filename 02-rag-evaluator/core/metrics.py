@@ -46,7 +46,8 @@ Score (0.0 to 1.0):"""
         score_str = call_llm(prompt, temperature=0.0)
         score = _extract_score(score_str)
         return max(0.0, min(1.0, score))
-    except (ValueError, TypeError):
+    except Exception as e:
+        print(f"Error scoring faithfulness: {e}")
         return 0.5
 
 
@@ -76,7 +77,8 @@ Score (0.0 to 1.0):"""
         score_str = call_llm(prompt, temperature=0.0)
         score = _extract_score(score_str)
         return max(0.0, min(1.0, score))
-    except (ValueError, TypeError):
+    except Exception as e:
+        print(f"Error scoring relevancy: {e}")
         return 0.5
 
 
@@ -105,5 +107,6 @@ Score (0.0 to 1.0):"""
         score_str = call_llm(prompt, temperature=0.0)
         score = _extract_score(score_str)
         return max(0.0, min(1.0, score))
-    except (ValueError, TypeError):
+    except Exception as e:
+        print(f"Error scoring correctness: {e}")
         return 0.5

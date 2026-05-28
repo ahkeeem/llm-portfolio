@@ -12,10 +12,10 @@ from langgraph.graph import END
 
 
 class ReceiptExtraction(BaseModel):
-    company: str
-    date: str
-    address: str
-    total: str
+    company: str = "Unknown"
+    date: str = "Unknown"
+    address: str = "Unknown"
+    total: str = "Unknown"
 
 
 def extract_node(state: AgentState) -> AgentState:

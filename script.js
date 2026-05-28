@@ -412,13 +412,7 @@ function loadReceiptSample() {
 
 async function processReceipt() {
     const receipt_text = document.getElementById("receiptInput").value.trim();
-    const apiKey = getGroqKey();
     if (!receipt_text) return;
-    if (!apiKey) {
-        document.getElementById("receiptError").style.display = "block";
-        document.getElementById("receiptErrorMessage").textContent = "Please enter your Groq API key above to use the Edge-AI demo.";
-        return;
-    }
 
     document.getElementById("processReceiptBtn").disabled = true;
     document.getElementById("receiptLoading").style.display = "block";
@@ -426,34 +420,21 @@ async function processReceipt() {
     document.getElementById("receiptError").style.display = "none";
 
     try {
-        // Edge-AI: Call Groq directly from the browser (no backend needed)
-        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        const res = await fetch(`${API_URLS.control_plane}/api/v1/workflows/invoke`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${apiKey}`
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                model: "llama-3.1-8b-instant",
-                messages: [{
-                    role: "user",
-                    content: `Extract the following fields from this receipt text. Return ONLY valid JSON, no markdown:\n{"company": "", "date": "", "address": "", "total": ""}\n\nReceipt:\n${receipt_text}`
-                }],
-                temperature: 0.1
+                workflow_id: "extraction-workflow",
+                session_id: "receipt-" + Date.now(),
+                inputs: { context: { receipt_text } }
             })
         });
-        if (!res.ok) throw new Error(`Groq API: HTTP ${res.status}`);
-        const groqData = await res.json();
-        const content = groqData.choices[0].message.content;
-
-        // Parse JSON from response
-        let fields;
-        try {
-            const jsonMatch = content.match(/\{[\s\S]*\}/);
-            fields = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(content);
-        } catch {
-            fields = { raw_output: content };
+        if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(errorData.detail || `Server Error (HTTP ${res.status})`);
         }
+        const responseData = await res.json();
+        const fields = responseData.state.fields || {};
 
         window.currentReceiptPrediction = fields;
 

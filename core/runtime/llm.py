@@ -35,9 +35,69 @@ print(f"✅ LLM Provider: {PROVIDER} | Model: {DEFAULT_MODEL}")
 import json
 import re
 from pydantic import BaseModel
-from typing import TypeVar, Type, Optional
+from typing import TypeVar, Type, Optional, Any
 
 T = TypeVar('T', bound=BaseModel)
+
+def _normalize_keys(data: Any, model: Type[BaseModel]) -> Any:
+    if not isinstance(data, dict):
+        return data
+    normalized = {}
+    model_fields = model.model_fields
+    
+    # Try exact matches first
+    for field_name in model_fields:
+        if field_name in data:
+            normalized[field_name] = data[field_name]
+            
+    # Try case-insensitive or partial matches for unmatched fields
+    for field_name in model_fields:
+        if field_name in normalized:
+            continue
+        matched = False
+        # Case-insensitive check
+        for k, v in data.items():
+            if k.lower() == field_name.lower():
+                normalized[field_name] = v
+                matched = True
+                break
+        if matched:
+            continue
+        # Partial match check
+        for k, v in data.items():
+            k_low = k.lower()
+            f_low = field_name.lower()
+            if f_low in k_low or k_low in f_low:
+                normalized[field_name] = v
+                matched = True
+                break
+        if matched:
+            continue
+        # Synonyms & Common variations check
+        alternatives = {
+            "priority": ["level", "urgency", "importance", "status"],
+            "type": ["category", "class", "kind", "genre", "classification"],
+            "company": ["merchant", "store", "name", "seller", "vendor"],
+            "date": ["time", "timestamp", "when"],
+            "address": ["location", "place", "street"],
+            "total": ["amount", "price", "cost", "sum", "payment"]
+        }
+        if field_name in alternatives:
+            for alt in alternatives[field_name]:
+                for k, v in data.items():
+                    if alt in k.lower():
+                        normalized[field_name] = v
+                        matched = True
+                        break
+                if matched:
+                    break
+                    
+    # Retain other keys just in case model accepts extra
+    for k, v in data.items():
+        if k not in normalized:
+            normalized[k] = v
+            
+    return normalized
 
 @retry(wait=wait_exponential(multiplier=1, min=2, max=10), stop=stop_after_attempt(3))
 def call_llm_structured(prompt: str, response_model: Type[T], model: str = None, project: str = "unknown") -> T:
@@ -82,8 +142,10 @@ def call_llm_structured(prompt: str, response_model: Type[T], model: str = None,
              # If the schema doesn't have this top-level key but the data does, unwrap it
              first_key = list(data.keys())[0]
              if first_key.lower() not in response_model.model_fields:
-                 data = data[first_key]
-                 
+                  data = data[first_key]
+                  
+        # Normalize the dictionary keys to prevent Pydantic ValidationError
+        data = _normalize_keys(data, response_model)
         return response_model.model_validate(data)
     except Exception as e:
         logger.error(f"Failed to parse LLM structured output: {e}\nContent: {content}")
