@@ -357,12 +357,11 @@ async function processEval() {
     document.getElementById("evalError").style.display = "none";
 
     try {
-        // Evaluate hits the analytics workflow which simulates a full pass
         const res = await fetch(`${API_URLS.control_plane}/api/v1/workflows/invoke`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                workflow_id: "analytics-workflow",
+                workflow_id: "evaluation-workflow",
                 session_id: "eval-" + Date.now(),
                 inputs: { context: { mode: "evaluate" } }
             })
@@ -374,24 +373,30 @@ async function processEval() {
         document.getElementById("evalLoading").style.display = "none";
         document.getElementById("evalResults").style.display = "block";
 
-        let scoresHtml = '';
-        // Simulating the legacy formatting for the aggregate scores
-        const mockAggregate = {
-            avg_faithfulness: 0.92,
-            avg_relevance: 0.88,
-            avg_pii_safety: 1.0,
-            total_requests: 124
+        const aggregate = data.aggregate || {};
+        const flagged = data.flagged || [];
+
+        const displayScores = {
+            avg_faithfulness: aggregate.avg_faithfulness,
+            avg_relevance: aggregate.avg_relevance,
+            avg_correctness: aggregate.avg_correctness,
+            total_evaluated: aggregate.total_evaluated
         };
 
-        scoresHtml = Object.entries(mockAggregate).map(([key, value]) => `
+        const scoresHtml = Object.entries(displayScores).map(([key, value]) => `
             <div class="class-badge">
                 <span class="class-label">${key.replace(/_/g, ' ')}</span>
-                <span class="class-value ${typeof value === 'number' && value >= 0.85 ? 'low' : (typeof value === 'number' && value >= 0.7 ? 'normal' : 'urgent')}">${typeof value === 'number' && key.startsWith('avg_') ? (value * 100).toFixed(1) + '%' : value}</span>
+                <span class="class-value ${typeof value === 'number' && key.startsWith('avg_') ? (value >= 0.85 ? 'low' : (value >= 0.7 ? 'normal' : 'urgent')) : 'info'}">${typeof value === 'number' && key.startsWith('avg_') ? (value * 100).toFixed(1) + '%' : (value !== undefined ? value : '0')}</span>
             </div>
         `).join('');
 
         document.getElementById("evalScores").innerHTML = scoresHtml;
-        document.getElementById("evalFlagged").textContent = "All production traces cleared compliance scan.";
+
+        if (flagged.length > 0) {
+            document.getElementById("evalFlagged").textContent = JSON.stringify(flagged, null, 2);
+        } else {
+            document.getElementById("evalFlagged").textContent = "No items flagged for manual review. All tests passed above the threshold.";
+        }
 
     } catch (err) {
         document.getElementById("evalLoading").style.display = "none";

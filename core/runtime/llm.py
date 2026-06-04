@@ -99,6 +99,36 @@ def _normalize_keys(data: Any, model: Type[BaseModel]) -> Any:
 
     return normalized
 
+def _generate_template_instructions(response_model: Type[BaseModel]) -> str:
+    schema = response_model.model_json_schema()
+    template = {}
+    for field_name, field_info in schema.get("properties", {}).items():
+        field_type = field_info.get("type", "string")
+        if field_type == "array":
+            items_type = field_info.get("items", {}).get("type", "string")
+            template[field_name] = [f"<{items_type}>"]
+        elif field_type == "object":
+            template[field_name] = "<object>"
+        else:
+            template[field_name] = f"<{field_type}>"
+            
+    template_json = json.dumps(template, indent=2)
+    required = schema.get("required", [])
+    
+    instructions = (
+        "You are a helpful assistant. You must respond in pure JSON.\n"
+        "Your output must be a single JSON object conforming strictly to the structure below:\n"
+        f"{template_json}\n\n"
+        "Crucial Rules:\n"
+        "1. Do NOT repeat or output the schema or template definition itself.\n"
+        "2. Replace the placeholder values (like <string>, <number>, <array>) with the actual values derived from user instructions.\n"
+        f"3. The top-level keys of your JSON response MUST be exactly: {', '.join(template.keys())}."
+    )
+    if required:
+        instructions += f"\n4. The following fields are REQUIRED: {', '.join(required)}."
+        
+    return instructions
+
 @retry(
     wait=wait_exponential(multiplier=1, min=2, max=10),
     stop=stop_after_attempt(3),
@@ -109,7 +139,7 @@ def call_llm_structured(prompt: str, response_model: Type[T], model: str = None,
     Call LLM and enforce structured JSON output matching the provided Pydantic model.
     Hardened to handle markdown blocks and potential LLM wrapping.
     """
-    system_prompt = f"You are a helpful assistant. You must respond in pure JSON. Adhere strictly to this schema: {response_model.model_json_schema()}"
+    system_prompt = _generate_template_instructions(response_model)
 
     response = client.chat.completions.create(
         model=model or DEFAULT_MODEL,
