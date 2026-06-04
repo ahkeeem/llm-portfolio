@@ -10,6 +10,8 @@ from typing import Dict, Any, Optional
 
 from core.workflows.registry import WorkflowRegistry
 from core.observability.metrics import metrics, track_endpoint
+from core.runtime.llm import PROVIDER  # for error messages
+import core.tool_registry.tools  # noqa: F401 — import triggers @ToolRegistry.register() decorators
 from apps.compliance_workflow.workflow import ComplianceWorkflow
 from apps.financial_workflow.workflow import FinancialWorkflow
 from apps.legal_workflow.workflow import LegalWorkflow
@@ -115,7 +117,19 @@ async def invoke_workflow(req: InvokeRequest):
 
         return {"status": "success", "session_id": req.session_id, "state": frontend_response}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Workflow execution failed: {str(e)}")
+        # Unwrap RetryError to show the real cause
+        error_msg = str(e)
+        cause = e
+        if hasattr(e, 'last_attempt'):
+            exc = e.last_attempt.exception()
+            if exc:
+                cause = exc
+                error_msg = str(exc)
+        # Provide user-friendly messages for common API errors
+        cause_type = type(cause).__name__
+        if 'PermissionDenied' in cause_type or 'AuthenticationError' in cause_type:
+            error_msg = f"LLM API key is invalid or expired ({PROVIDER}). Please update your API key in .env"
+        raise HTTPException(status_code=500, detail=f"Workflow execution failed: {error_msg}")
 
 
 @app.get("/api/v1/workflows")

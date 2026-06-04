@@ -1,7 +1,7 @@
 import os
-from openai import OpenAI
+from openai import OpenAI, PermissionDeniedError, AuthenticationError
 from dotenv import load_dotenv
-from tenacity import retry, wait_exponential, stop_after_attempt
+from tenacity import retry, wait_exponential, stop_after_attempt, retry_if_not_exception_type
 from core.observability.metrics import metrics
 import logging
 
@@ -35,7 +35,7 @@ print(f"✅ LLM Provider: {PROVIDER} | Model: {DEFAULT_MODEL}")
 import json
 import re
 from pydantic import BaseModel
-from typing import TypeVar, Type, Optional, Any
+from typing import TypeVar, Type, Any
 
 T = TypeVar('T', bound=BaseModel)
 
@@ -99,7 +99,11 @@ def _normalize_keys(data: Any, model: Type[BaseModel]) -> Any:
 
     return normalized
 
-@retry(wait=wait_exponential(multiplier=1, min=2, max=10), stop=stop_after_attempt(3))
+@retry(
+    wait=wait_exponential(multiplier=1, min=2, max=10),
+    stop=stop_after_attempt(3),
+    retry=retry_if_not_exception_type((PermissionDeniedError, AuthenticationError)),
+)
 def call_llm_structured(prompt: str, response_model: Type[T], model: str = None, project: str = "unknown") -> T:
     """
     Call LLM and enforce structured JSON output matching the provided Pydantic model.
@@ -151,7 +155,11 @@ def call_llm_structured(prompt: str, response_model: Type[T], model: str = None,
         logger.error(f"Failed to parse LLM structured output: {e}\nContent: {content}")
         raise
 
-@retry(wait=wait_exponential(multiplier=1, min=2, max=10), stop=stop_after_attempt(3))
+@retry(
+    wait=wait_exponential(multiplier=1, min=2, max=10),
+    stop=stop_after_attempt(3),
+    retry=retry_if_not_exception_type((PermissionDeniedError, AuthenticationError)),
+)
 def call_llm(prompt: str, model: str = None, temperature: float = 0.3, project: str = "unknown") -> str:
     """Call LLM with retry-friendly defaults and token tracking."""
     response = client.chat.completions.create(

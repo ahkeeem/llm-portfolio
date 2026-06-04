@@ -124,17 +124,36 @@ metrics = MetricsCollector()
 def track_endpoint(endpoint_name: str):
     """Decorator to track request count, latency, and errors for an endpoint."""
     def decorator(fn):
-        @wraps(fn)
-        def wrapper(*args, **kwargs):
-            metrics.inc("requests_total")
-            start = time.time()
-            try:
-                result = fn(*args, **kwargs)
-                return result
-            except Exception:
-                metrics.record_error(endpoint_name)
-                raise
-            finally:
-                metrics.record_latency(endpoint_name, time.time() - start)
-        return wrapper
+        import asyncio
+        import inspect
+
+        if inspect.iscoroutinefunction(fn):
+            @wraps(fn)
+            async def async_wrapper(*args, **kwargs):
+                metrics.inc("requests_total")
+                start = time.time()
+                try:
+                    result = await fn(*args, **kwargs)
+                    return result
+                except Exception:
+                    metrics.record_error(endpoint_name)
+                    raise
+                finally:
+                    metrics.record_latency(endpoint_name, time.time() - start)
+            return async_wrapper
+        else:
+            @wraps(fn)
+            def wrapper(*args, **kwargs):
+                metrics.inc("requests_total")
+                start = time.time()
+                try:
+                    result = fn(*args, **kwargs)
+                    return result
+                except Exception:
+                    metrics.record_error(endpoint_name)
+                    raise
+                finally:
+                    metrics.record_latency(endpoint_name, time.time() - start)
+            return wrapper
     return decorator
+

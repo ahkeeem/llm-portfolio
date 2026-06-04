@@ -17,6 +17,7 @@ COPY apps/ ./apps/
 COPY core/ ./core/
 COPY services/ ./services/
 COPY datasets/ ./datasets/
+COPY data/ ./data/
 
 # Use an entrypoint script to decide between Control Plane and Compute Plane
 COPY entrypoint.sh ./
