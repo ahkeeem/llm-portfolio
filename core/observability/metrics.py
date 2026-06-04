@@ -7,6 +7,11 @@ import time
 import threading
 from datetime import datetime
 from functools import wraps
+from contextvars import ContextVar
+from typing import Optional
+
+# Context-local token and cost tracking for a single request/workflow run
+request_usage_context: ContextVar[Optional[list]] = ContextVar("request_usage_context", default=None)
 
 
 class MetricsCollector:
@@ -53,6 +58,27 @@ class MetricsCollector:
             self._per_endpoint[endpoint]["errors"] += 1
 
     def record_tokens(self, prompt_tokens: int, completion_tokens: int, model: str = "unknown", project: str = "unknown"):
+        # Calculate cost for this call
+        if "gpt-4o" in model:
+            rate_p, rate_c = 0.15, 0.60  # $ per 1M tokens
+        elif "llama-3" in model or "groq" in model:
+            rate_p, rate_c = 0.05, 0.08  # $ per 1M tokens
+        else:
+            rate_p, rate_c = 0.10, 0.20  # Default fallback
+        cost = (prompt_tokens * rate_p / 1_000_000) + (completion_tokens * rate_c / 1_000_000)
+
+        # Record to request-local context if active
+        ctx = request_usage_context.get()
+        if ctx is not None:
+            ctx.append({
+                "prompt_tokens": prompt_tokens,
+                "completion_tokens": completion_tokens,
+                "total_tokens": prompt_tokens + completion_tokens,
+                "cost_usd": cost,
+                "model": model,
+                "project": project,
+            })
+
         with self._lock:
             self._counters["tokens_prompt"] += prompt_tokens
             self._counters["tokens_completion"] += completion_tokens

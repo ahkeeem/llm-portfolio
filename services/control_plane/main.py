@@ -115,7 +115,12 @@ async def invoke_workflow(req: InvokeRequest):
                 "status": "success",
             }
 
-        return {"status": "success", "session_id": req.session_id, "state": frontend_response}
+        return {
+            "status": "success",
+            "session_id": req.session_id,
+            "state": frontend_response,
+            "metadata": result.get("metadata", {}),
+        }
     except Exception as e:
         # Unwrap RetryError to show the real cause
         error_msg = str(e)

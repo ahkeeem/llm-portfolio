@@ -12,7 +12,7 @@ Each metric returns a float between 0.0 and 1.0.
 """
 
 import re
-from core.llm import call_llm
+from core.runtime.llm import call_llm
 
 
 def _extract_score(text: str) -> float:
