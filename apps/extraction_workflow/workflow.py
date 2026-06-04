@@ -3,7 +3,6 @@ Extraction Workflow: Edge-AI Document Extraction via backend LLM.
 Routes receipt/document text through the server-side Groq API
 so no API key is ever exposed in the browser.
 """
-from typing import Dict, Any
 from core.runtime.base_agent import BaseWorkflow
 from core.schemas.state import AgentState
 from core.runtime.llm import call_llm_structured

@@ -36,7 +36,7 @@ def async_vector_indexing(self, documents: list) -> dict:
     # Simulate heavy GPU/CPU processing
     time.sleep(3)
 
-    logger.info(f"Finished vector indexing.")
+    logger.info("Finished vector indexing.")
     return {
         "status": "success",
         "indexed_chunks": len(documents) * 5,

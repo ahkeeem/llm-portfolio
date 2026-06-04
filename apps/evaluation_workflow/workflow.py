@@ -2,12 +2,10 @@
 Evaluation Workflow: LLM-as-a-Judge RAG quality evaluation.
 Uses the centralized LLM runtime so all token usage is tracked in real metrics.
 """
-from typing import Dict, Any, List
 from core.runtime.base_agent import BaseWorkflow
 from core.schemas.state import AgentState
 from core.runtime.llm import call_llm_structured
 from core.tool_registry.registry import ToolRegistry
-import core.tool_registry.tools  # Ensure tools are registered
 from pydantic import BaseModel
 from langgraph.graph import END
 

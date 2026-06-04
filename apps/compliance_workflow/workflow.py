@@ -1,5 +1,5 @@
 import re
-from typing import Dict, Any, List
+from typing import List
 from core.runtime.base_agent import BaseWorkflow
 from core.schemas.state import AgentState
 from core.runtime.llm import call_llm
@@ -54,7 +54,6 @@ def scan_node(state: AgentState) -> AgentState:
 
 from core.tool_registry.registry import ToolRegistry
 # Ensure tools are imported so decorators run
-import core.tool_registry.tools
 
 from pydantic import BaseModel
 
