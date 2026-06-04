@@ -57,15 +57,52 @@ setInterval(fetchLiveMetrics, 15000);
 async function checkApiStatus() {
     const dot = document.getElementById("apiStatus");
     const text = document.getElementById("apiStatusText");
+    
+    const tStatus = document.getElementById("tooltipStatus");
+    const tLatency = document.getElementById("tooltipLatency");
+    const tEngine = document.getElementById("tooltipEngine");
+    const tRequests = document.getElementById("tooltipRequests");
+    const tCost = document.getElementById("tooltipCost");
+    
+    const start = performance.now();
     try {
         const res = await fetch(`${API_URLS.control_plane}/health`, { signal: AbortSignal.timeout(3000) });
+        const latency = Math.round(performance.now() - start);
         if (res.ok) {
+            const data = await res.json();
+            
             dot.className = "status-dot online";
-            text.textContent = "Control Plane Online";
+            text.textContent = `Control Plane Online (${latency}ms)`;
+            
+            if (tStatus) {
+                tStatus.textContent = "Online";
+                tStatus.className = "online";
+            }
+            if (tLatency) tLatency.textContent = `${latency}ms`;
+            
+            // Format LLM Engine info nicely
+            if (tEngine) {
+                const provider = (data.llm_provider || "unknown").toUpperCase();
+                const model = data.llm_model || "unknown";
+                tEngine.textContent = `${provider} (${model})`;
+            }
+            
+            if (data.metrics) {
+                if (tRequests) tRequests.textContent = (data.metrics.counters?.requests_total || 0).toLocaleString();
+                if (tCost) tCost.textContent = `$${(data.metrics.cost_estimate_usd || 0).toFixed(4)}`;
+            }
         } else { throw new Error(); }
     } catch {
         dot.className = "status-dot offline";
         text.textContent = "Control Plane Offline";
+        if (tStatus) {
+            tStatus.textContent = "Offline";
+            tStatus.className = "offline";
+        }
+        if (tLatency) tLatency.textContent = "—";
+        if (tEngine) tEngine.textContent = "—";
+        if (tRequests) tRequests.textContent = "—";
+        if (tCost) tCost.textContent = "—";
     }
 }
 setInterval(checkApiStatus, 10000);
@@ -207,7 +244,8 @@ async function approveEmail(approved) {
             flag.className = "approval-flag rejected";
         }
     } catch (err) {
-        alert("Error: " + err.message);
+        document.getElementById("demoError").style.display = "block";
+        document.getElementById("errorMessage").textContent = err.message;
     }
 }
 
@@ -225,7 +263,13 @@ const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
             entry.target.querySelectorAll(".bar-fill").forEach(bar => {
-                bar.style.width = bar.style.width; // trigger animation
+                const targetWidth = bar.dataset.width || bar.style.width;
+                bar.style.width = "0%";
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        bar.style.width = targetWidth;
+                    });
+                });
             });
         }
     });
@@ -489,3 +533,270 @@ function resetReceiptDemo() {
     document.getElementById("receiptError").style.display = "none";
     document.getElementById("receiptStep1").scrollIntoView({ behavior: "smooth" });
 }
+
+// ===================================================================
+// BI CHAT — Conversational SQL Agent
+// ===================================================================
+
+let biHistory = [];         // conversation history [{role, content}]
+let biChartInstance = null; // current Chart.js instance
+let biSchemaCache = null;   // cached schema from /api/v1/bi-schema
+
+// -- Dataset Viewer --------------------------------------------------
+
+async function toggleDatasetViewer() {
+    const viewer = document.getElementById("biDatasetViewer");
+    const isHidden = viewer.style.display === "none";
+    viewer.style.display = isHidden ? "block" : "none";
+
+    if (isHidden && !biSchemaCache) {
+        try {
+            const res = await fetch(`${API_URLS.control_plane}/api/v1/bi-schema`);
+            if (res.ok) {
+                const data = await res.json();
+                biSchemaCache = data;
+                // Show schema summary
+                const schemaDesc = Object.entries(data.schema || {})
+                    .map(([t, cols]) => `<strong>${t}</strong>: ${cols.join(", ")}`)
+                    .join("<br>");
+                document.getElementById("biSchemaInfo").innerHTML = schemaDesc;
+                // Load first table preview by default
+                const firstTable = Object.keys(data.schema || {})[0];
+                if (firstTable) loadTablePreview(firstTable, data.previews);
+            }
+        } catch (err) {
+            document.getElementById("biSchemaInfo").textContent = "Could not load schema: " + err.message;
+        }
+    }
+}
+
+function loadTablePreview(tableName, previewData) {
+    const data = previewData || (biSchemaCache && biSchemaCache.previews);
+    if (!data || !data[tableName]) return;
+
+    const { columns, rows } = data[tableName];
+    const thead = document.getElementById("biPreviewHead");
+    const tbody = document.getElementById("biPreviewBody");
+
+    thead.innerHTML = `<tr>${columns.map(c => `<th>${c}</th>`).join("")}</tr>`;
+    tbody.innerHTML = rows.map(r =>
+        `<tr>${r.map(v => `<td title="${v || ''}">${v || "—"}</td>`).join("")}</tr>`
+    ).join("");
+
+    // Highlight active button
+    ["sec_filings", "transactions"].forEach(name => {
+        const btn = document.getElementById(`btnTable${name.split("_").map(w => w[0].toUpperCase() + w.slice(1)).join("")}`);
+        if (btn) btn.style.background = name === tableName ? "rgba(99,102,241,0.25)" : "";
+    });
+}
+
+// -- Keyboard: Enter sends, Shift+Enter newline ----------------------
+
+function biInputKeydown(e) {
+    if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendBiChat();
+    }
+}
+
+// -- Quick question buttons ------------------------------------------
+
+function sendBiQuestion(text) {
+    document.getElementById("biInput").value = text;
+    sendBiChat();
+}
+
+// -- Core send -------------------------------------------------------
+
+async function sendBiChat() {
+    const input = document.getElementById("biInput");
+    const question = input.value.trim();
+    if (!question) return;
+
+    input.value = "";
+    input.style.height = "44px";
+
+    // Hide placeholder, show messages
+    document.getElementById("biChatPlaceholder").style.display = "none";
+
+    // Append user bubble
+    appendBiMessage("user", question);
+
+    // Disable send button, show loading
+    document.getElementById("biSendBtn").disabled = true;
+    document.getElementById("biLoading").style.display = "block";
+
+    // Add to history
+    biHistory.push({ role: "user", content: question });
+
+    try {
+        const res = await fetch(`${API_URLS.control_plane}/api/v1/bi-chat`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                question,
+                session_id: "bi-" + Date.now(),
+                history: biHistory.slice(-8)  // last 4 turns
+            })
+        });
+
+        const data = await res.json();
+        document.getElementById("biLoading").style.display = "none";
+
+        if (!res.ok || data.status === "error") {
+            const errMsg = data.error || data.detail || `HTTP ${res.status}`;
+            appendBiErrorMessage(data.generated_sql || "", errMsg);
+            biHistory.push({ role: "assistant", content: `Error: ${errMsg}` });
+        } else {
+            appendBiResultMessage(data);
+            biHistory.push({ role: "assistant", content: data.summary || "" });
+        }
+
+    } catch (err) {
+        document.getElementById("biLoading").style.display = "none";
+        appendBiErrorMessage("", err.message);
+    }
+
+    document.getElementById("biSendBtn").disabled = false;
+    // Auto-scroll chat window
+    const win = document.getElementById("biChatWindow");
+    win.scrollTop = win.scrollHeight;
+}
+
+// -- Render helpers --------------------------------------------------
+
+function appendBiMessage(role, text) {
+    const container = document.getElementById("biMessages");
+    const div = document.createElement("div");
+    div.className = `bi-msg bi-msg-${role}`;
+    const label = role === "user" ? "You" : "BI Agent";
+    div.innerHTML = `
+        <div class="bi-msg-label">${label}</div>
+        <div class="bi-bubble-${role}">${escapeHtml(text)}</div>
+    `;
+    container.appendChild(div);
+}
+
+function appendBiResultMessage(data) {
+    const container = document.getElementById("biMessages");
+    const msgId = "biMsg" + Date.now();
+    const chartId = "biChart" + Date.now();
+
+    // Build table HTML
+    let tableHtml = "";
+    if (data.columns && data.columns.length > 0) {
+        const headerCells = data.columns.map(c => `<th>${escapeHtml(c)}</th>`).join("");
+        const bodyRows = (data.rows || []).map(row =>
+            `<tr>${row.map(v => `<td title="${escapeHtml(String(v || ''))}">${escapeHtml(String(v ?? "—"))}</td>`).join("")}</tr>`
+        ).join("");
+        tableHtml = `
+            <div class="bi-row-count">${data.row_count || data.rows?.length || 0} row(s) returned</div>
+            <div class="bi-results-table-wrap">
+                <table class="bi-results-table">
+                    <thead><tr>${headerCells}</tr></thead>
+                    <tbody>${bodyRows}</tbody>
+                </table>
+            </div>`;
+    }
+
+    // Build chart HTML placeholder
+    let chartHtml = "";
+    if (data.chart_config && data.chart_config.labels && data.chart_config.labels.length > 0) {
+        chartHtml = `<div class="bi-chart-wrap"><canvas id="${chartId}"></canvas></div>`;
+    }
+
+    const div = document.createElement("div");
+    div.className = "bi-msg bi-msg-agent";
+    div.id = msgId;
+    div.innerHTML = `
+        <div class="bi-msg-label">BI Agent</div>
+        <div class="bi-bubble-agent">
+            <div class="bi-sql-label">Generated SQL</div>
+            <pre class="bi-sql-block">${escapeHtml(data.generated_sql || "")}</pre>
+            <div class="bi-summary">${escapeHtml(data.summary || "")}</div>
+            ${tableHtml}
+            ${chartHtml}
+        </div>
+    `;
+    container.appendChild(div);
+
+    // Render chart after DOM insertion
+    if (chartHtml && data.chart_config) {
+        requestAnimationFrame(() => renderBiChart(chartId, data.chart_config));
+    }
+}
+
+function appendBiErrorMessage(sql, errMsg) {
+    const container = document.getElementById("biMessages");
+    const div = document.createElement("div");
+    div.className = "bi-msg bi-msg-agent";
+    div.innerHTML = `
+        <div class="bi-msg-label">BI Agent</div>
+        <div class="bi-bubble-agent">
+            ${sql ? `<div class="bi-sql-label">Generated SQL</div><pre class="bi-sql-block">${escapeHtml(sql)}</pre>` : ""}
+            <div class="bi-error-msg">⚠️ ${escapeHtml(errMsg)}</div>
+        </div>
+    `;
+    container.appendChild(div);
+}
+
+function renderBiChart(canvasId, config) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    if (typeof Chart === "undefined") return;
+
+    // Theme-aware colors
+    const textColor = getComputedStyle(document.body).getPropertyValue("--text-secondary") || "#a0a0b8";
+    const gridColor = "rgba(255,255,255,0.06)";
+
+    const chartConfig = {
+        type: config.type || "bar",
+        data: {
+            labels: config.labels,
+            datasets: config.datasets || []
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            animation: { duration: 500 },
+            plugins: {
+                legend: {
+                    display: config.datasets && config.datasets.length > 1,
+                    labels: { color: textColor, font: { size: 11 } }
+                },
+                title: {
+                    display: !!config.title,
+                    text: config.title || "",
+                    color: textColor,
+                    font: { size: 12, weight: "600" }
+                }
+            },
+            scales: config.type === "doughnut" || config.type === "pie" ? {} : {
+                x: {
+                    ticks: { color: textColor, font: { size: 10 }, maxRotation: 45 },
+                    grid: { color: gridColor }
+                },
+                y: {
+                    ticks: { color: textColor, font: { size: 10 } },
+                    grid: { color: gridColor }
+                }
+            }
+        }
+    };
+
+    // Destroy existing chart instance to prevent memory leaks
+    if (biChartInstance) {
+        biChartInstance.destroy();
+    }
+    biChartInstance = new Chart(canvas, chartConfig);
+}
+
+function escapeHtml(str) {
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+}
+

@@ -12,10 +12,10 @@ Across these 4 projects, the total estimated cloud inference cost is **~$6/month
 
 | # | Project | Domain | Core Skill | Dataset | Live API |
 |---|---------|--------|------------|---------|----------|
-| 1 | [RAG Policy Advisor](./01-rag-policy-advisor/) | Regulatory / Research | Retrieval-Augmented Generation | UK Gov + arXiv | [▶️ Loom Demo](#) \| [Swagger UI](https://rag-gdzc.onrender.com/docs) |
-| 2 | [RAG Evaluator](./02-rag-evaluator/) | Quality Assurance | LLM-as-a-Judge Eval Pipelines | Custom QA (from P1) | [▶️ Loom Demo](#) \| Local / Docker |
-| 3 | [Edge-AI Extraction Pipeline](./03-edge-ai-extraction/) | Edge AI / OCR | Local OCR + SLM Fine-tuning | SROIE Dataset | [▶️ Loom Demo](#) \| Local / Edge |
-| 4 | [Email Triage Agent](./04-email-triage-agent/) | Enterprise Ops | Stateful Agents (LangGraph) | Enron Email (Kaggle) | [▶️ Loom Demo](#) \| [Swagger UI](https://email-x1cn.onrender.com/docs) |
+| 1 | [RAG Policy Advisor](./01-rag-policy-advisor/) | Regulatory / Research | Retrieval-Augmented Generation | UK Gov + arXiv | 🎬 Demo coming soon \| [Swagger UI](https://rag-gdzc.onrender.com/docs) |
+| 2 | [RAG Evaluator](./02-rag-evaluator/) | Quality Assurance | LLM-as-a-Judge Eval Pipelines | Custom QA (from P1) | 🎬 Demo coming soon \| Local / Docker |
+| 3 | [Edge-AI Extraction Pipeline](./03-edge-ai-extraction/) | Edge AI / OCR | Local OCR + SLM Fine-tuning | SROIE Dataset | 🎬 Demo coming soon \| Local / Edge |
+| 4 | [Email Triage Agent](./04-email-triage-agent/) | Enterprise Ops | Stateful Agents (LangGraph) | Enron Email (Kaggle) | 🎬 Demo coming soon \| [Swagger UI](https://email-x1cn.onrender.com/docs) |
 
 ---
 

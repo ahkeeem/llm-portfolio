@@ -17,28 +17,51 @@ class EvalScore(BaseModel):
     reasoning: str = ""
 
 
-# A small built-in test set so the evaluator always has real questions to grade
-EVAL_QA_PAIRS = [
-    {
-        "question": "What is the company refund policy?",
-        "expected": "The company guarantees a 30-day refund window for all enterprise products.",
-    },
-    {
-        "question": "How should PII data be handled when using LLMs?",
-        "expected": "PII data such as SSN and credit cards must be redacted before sending to third-party LLMs.",
-    },
-    {
-        "question": "What are the support hours?",
-        "expected": "Support hours are 9am to 6pm EST.",
-    },
-]
+import json
+import os
+
+_PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
+_QA_PAIRS_PATH = os.path.join(_PROJECT_ROOT, "data", "samples", "qa_pairs.json")
+
+def _load_qa_pairs() -> list[dict]:
+    """Dynamically load verification QA pairs from the RAG policy advisor dataset."""
+    try:
+        if os.path.exists(_QA_PAIRS_PATH):
+            with open(_QA_PAIRS_PATH, "r") as f:
+                data = json.load(f)
+                return [
+                    {
+                        "question": item["question"],
+                        "expected": item["answer"]
+                    }
+                    for item in data
+                ]
+    except Exception:
+        pass
+    
+    # Fallback to standard QA pairs from the UK AI regulation whitepapers if loading fails
+    return [
+        {
+            "question": "What are the UK government's key principles on AI regulation?",
+            "expected": "The UK follows a pro-innovation, sector-specific approach to AI regulation based on five principles: safety, transparency, fairness, accountability, and contestability.",
+        },
+        {
+            "question": "How does the UK approach AI transparency requirements?",
+            "expected": "The UK requires organisations deploying AI to be transparent about when AI is being used in decision-making, provide explanations of AI decisions, and maintain records of AI system development and deployment.",
+        },
+        {
+            "question": "How does GDPR interact with AI regulation in the UK?",
+            "expected": "The UK Data Protection Act 2018 and UK GDPR require that automated decision-making is lawful, fair, and transparent. Individuals have the right to human review of significant automated decisions and to be informed about the logic involved.",
+        }
+    ]
 
 
 def retrieve_and_answer_node(state: AgentState) -> AgentState:
     """For each QA pair, retrieve context and generate an answer, then store for judging."""
     qa_results = []
+    qa_pairs = _load_qa_pairs()
 
-    for pair in EVAL_QA_PAIRS:
+    for pair in qa_pairs:
         # Retrieve context via the tool registry (same path as the live RAG demo)
         policy_results = ToolRegistry.invoke("policy_search", query=pair["question"])
         context = "\n".join([r["text"] for r in policy_results])

@@ -1,0 +1,52 @@
+[
+  {
+    "question": "What are the UK government's key principles on AI regulation?",
+    "answer": "The UK follows a pro-innovation, sector-specific approach to AI regulation based on five principles: safety, transparency, fairness, accountability, and contestability.",
+    "verified": true
+  },
+  {
+    "question": "How does the UK approach AI transparency requirements?",
+    "answer": "The UK requires organisations deploying AI to be transparent about when AI is being used in decision-making, provide explanations of AI decisions, and maintain records of AI system development and deployment.",
+    "verified": true
+  },
+  {
+    "question": "What sectors are prioritised in UK AI regulation?",
+    "answer": "The UK prioritises regulation in financial services, healthcare, transport, and telecommunications, with existing sector regulators taking the lead on AI governance within their domains.",
+    "verified": true
+  },
+  {
+    "question": "How does the UK AI framework address bias and fairness?",
+    "answer": "The framework requires organisations to assess and mitigate algorithmic bias, ensure AI systems do not discriminate against protected characteristics, and maintain diversity in training datasets.",
+    "verified": true
+  },
+  {
+    "question": "What role does the UK's AI Safety Institute play?",
+    "answer": "The AI Safety Institute conducts pre-deployment testing of frontier AI models, researches AI safety risks, and advises government on emerging threats from advanced AI systems.",
+    "verified": true
+  },
+  {
+    "question": "How does GDPR interact with AI regulation in the UK?",
+    "answer": "The UK Data Protection Act 2018 and UK GDPR require that automated decision-making is lawful, fair, and transparent. Individuals have the right to human review of significant automated decisions and to be informed about the logic involved.",
+    "verified": true
+  },
+  {
+    "question": "What is the UK's position on open-source AI models?",
+    "answer": "The UK supports open-source AI development as a driver of innovation and competition, while acknowledging that open-weight models require appropriate safety evaluations before release.",
+    "verified": true
+  },
+  {
+    "question": "How does the UK plan to ensure AI accountability?",
+    "answer": "The accountability principle requires clear assignment of responsibility for AI outcomes, maintaining audit trails of AI decisions, and establishing governance structures within organisations deploying AI systems.",
+    "verified": true
+  },
+  {
+    "question": "What compute infrastructure is the UK investing in for AI?",
+    "answer": "The UK is investing in sovereign AI compute capacity through initiatives like the Isambard-AI supercomputer at Bristol, expanding access to GPU clusters for academic research, and partnering with cloud providers for secure compute.",
+    "verified": true
+  },
+  {
+    "question": "How does the UK approach international AI governance?",
+    "answer": "The UK positions itself as a global leader in AI governance through hosting the AI Safety Summit at Bletchley Park, engaging with the G7 Hiroshima AI Process, and collaborating with international standards bodies on AI safety frameworks.",
+    "verified": true
+  }
+]
