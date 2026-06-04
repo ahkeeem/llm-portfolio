@@ -6,14 +6,31 @@ instead of returning hardcoded mock data. This demonstrates
 load-balanced dataset coupling at the portfolio level.
 """
 import os
+import pathlib
 import pandas as pd
 from typing import List, Dict, Any
+import chromadb
+from chromadb.utils import embedding_functions
+import chromadb.utils.embedding_functions.onnx_mini_lm_l6_v2 as onnx_module
 
 from core.tool_registry.registry import ToolRegistry
 
 # Resolve paths relative to the project root
 _PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 _SAMPLES_DIR = os.path.join(_PROJECT_ROOT, "data", "samples")
+
+# Configure ONNX download path to point to workspace's cache
+workspace_cache = pathlib.Path(_PROJECT_ROOT) / ".chroma_cache" / "onnx_models" / "all-MiniLM-L6-v2"
+onnx_module.ONNXMiniLM_L6_V2.DOWNLOAD_PATH = workspace_cache
+
+_embed_fn = embedding_functions.DefaultEmbeddingFunction()
+
+# Persistent ChromaDB client
+_chroma_client = chromadb.PersistentClient(path=os.path.join(_PROJECT_ROOT, "data", "chromadb"))
+_collection = _chroma_client.get_or_create_collection(
+    name="policy_documents",
+    metadata={"hnsw:space": "cosine"},
+)
 
 
 def _load_sample(filename: str, nrows: int = None) -> pd.DataFrame:
@@ -30,35 +47,54 @@ def _load_sample(filename: str, nrows: int = None) -> pd.DataFrame:
 )
 def policy_search(query: str, top_k: int = 3) -> List[Dict[str, Any]]:
     """
-    Search tool wrapper that queries the email sample dataset
-    for messages matching the query terms. In production, this
-    would hit a vector index (ChromaDB/pgvector).
+    Search the persistent ChromaDB collection for documents matching the query.
+    Falls back to pandas CSV search and then mock data on failure.
     """
     try:
-        df = _load_sample("emails_sample.csv", nrows=200)
-        # Simple keyword search on the message column
-        query_lower = query.lower()
-        mask = df["message"].str.lower().str.contains(query_lower, na=False)
-        matches = df[mask].head(top_k)
+        query_embedding = _embed_fn([query])[0]
+        results = _collection.query(
+            query_embeddings=[query_embedding],
+            n_results=top_k,
+        )
 
-        if matches.empty:
-            # Fallback: return first few records as context
-            matches = df.head(top_k)
+        output = []
+        if results and results.get("documents") and len(results["documents"][0]) > 0:
+            for i in range(len(results["documents"][0])):
+                dist = results["distances"][0][i] if results["distances"] else 0.0
+                score = round(1.0 - dist, 2)
+                output.append({
+                    "text": results["documents"][0][i],
+                    "source": results["metadatas"][0][i].get("source", "ChromaDB") if results["metadatas"] else "ChromaDB",
+                    "score": score,
+                })
+            return output
 
-        return [
-            {
-                "text": row["message"][:500],
-                "source": row.get("file", "email_corpus"),
-                "score": round(0.95 - i * 0.03, 2),
-            }
-            for i, (_, row) in enumerate(matches.iterrows())
-        ]
-    except FileNotFoundError:
-        # Graceful fallback to mock if sample not yet generated
-        return [
-            {"text": "30-day refund window for all enterprise products.", "score": 0.95},
-            {"text": "PII data must be redacted before sending to third-party LLMs.", "score": 0.88},
-        ]
+        raise ValueError("Chroma collection returned no results")
+    except Exception:
+        # Graceful fallback to pandas search on emails_sample.csv
+        try:
+            df = _load_sample("emails_sample.csv", nrows=200)
+            query_lower = query.lower()
+            mask = df["message"].str.lower().str.contains(query_lower, na=False)
+            matches = df[mask].head(top_k)
+
+            if matches.empty:
+                matches = df.head(top_k)
+
+            return [
+                {
+                    "text": row["message"][:500],
+                    "source": row.get("file", "email_corpus"),
+                    "score": round(0.95 - i * 0.03, 2),
+                }
+                for i, (_, row) in enumerate(matches.iterrows())
+            ]
+        except FileNotFoundError:
+            # Final fallback to hardcoded mock text
+            return [
+                {"text": "30-day refund window for all enterprise products.", "score": 0.95},
+                {"text": "PII data must be redacted before sending to third-party LLMs.", "score": 0.88},
+            ]
 
 
 @ToolRegistry.register(

@@ -18,6 +18,7 @@ COPY core/ ./core/
 COPY services/ ./services/
 COPY datasets/ ./datasets/
 COPY data/ ./data/
+COPY .chroma_cache/ ./.chroma_cache/
 
 # Use an entrypoint script to decide between Control Plane and Compute Plane
 COPY entrypoint.sh ./
