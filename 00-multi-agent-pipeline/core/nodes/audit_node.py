@@ -5,8 +5,8 @@ project_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..
 if project_path not in sys.path:
     sys.path.insert(0, project_path)
 
-from core.metrics import score_faithfulness, score_relevancy
-from app.state import AgentState
+from core.metrics import score_faithfulness, score_relevancy  # noqa: E402
+from app.state import AgentState  # noqa: E402
 
 # Clean up path to prevent namespace collisions
 if sys.path[0] == project_path:

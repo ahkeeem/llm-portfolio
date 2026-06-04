@@ -1,9 +1,13 @@
 import os
+import json
+import re
+import logging
+from typing import TypeVar, Type, Any
+from pydantic import BaseModel
 from openai import OpenAI, PermissionDeniedError, AuthenticationError
 from dotenv import load_dotenv
 from tenacity import retry, wait_exponential, stop_after_attempt, retry_if_not_exception_type
 from core.observability.metrics import metrics
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -31,11 +35,6 @@ else:
 
 print(f"✅ LLM Provider: {PROVIDER} | Model: {DEFAULT_MODEL}")
 
-
-import json
-import re
-from pydantic import BaseModel
-from typing import TypeVar, Type, Any
 
 T = TypeVar('T', bound=BaseModel)
 
@@ -111,10 +110,10 @@ def _generate_template_instructions(response_model: Type[BaseModel]) -> str:
             template[field_name] = "<object>"
         else:
             template[field_name] = f"<{field_type}>"
-            
+
     template_json = json.dumps(template, indent=2)
     required = schema.get("required", [])
-    
+
     instructions = (
         "You are a helpful assistant. You must respond in pure JSON.\n"
         "Your output must be a single JSON object conforming strictly to the structure below:\n"
@@ -126,7 +125,7 @@ def _generate_template_instructions(response_model: Type[BaseModel]) -> str:
     )
     if required:
         instructions += f"\n4. The following fields are REQUIRED: {', '.join(required)}."
-        
+
     return instructions
 
 @retry(

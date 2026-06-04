@@ -1,9 +1,11 @@
 import re
 from typing import List
+from pydantic import BaseModel
 from core.runtime.base_agent import BaseWorkflow
 from core.schemas.state import AgentState
 from core.runtime.llm import call_llm
 from core.observability.metrics import metrics
+from core.tool_registry.registry import ToolRegistry
 from langgraph.graph import END
 
 # Enterprise Context: Usually fetched from a database/CRM
@@ -52,10 +54,7 @@ def scan_node(state: AgentState) -> AgentState:
     state["messages"].append({"role": "system", "content": f"PII scan complete. Types found: {pii_types}"})
     return state
 
-from core.tool_registry.registry import ToolRegistry
 # Ensure tools are imported so decorators run
-
-from pydantic import BaseModel
 
 class ClassificationResponse(BaseModel):
     priority: str = "normal"

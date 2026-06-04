@@ -50,7 +50,7 @@ class TestFullPipelineExecution(unittest.TestCase):
 
     def test_pipeline_end_to_end(self):
         try:
-            from langgraph.graph import StateGraph, END
+            import langgraph  # noqa: F401
         except ImportError:
             self.skipTest("langgraph not installed — skipping graph execution test")
 

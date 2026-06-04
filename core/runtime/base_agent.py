@@ -2,10 +2,10 @@ import time
 import logging
 from abc import ABC, abstractmethod
 from typing import Any, Dict
-
-logger = logging.getLogger("ear.workflow")
 from langgraph.graph import StateGraph
 from core.schemas.state import AgentState
+
+logger = logging.getLogger("ear.workflow")
 
 class BaseWorkflow(ABC):
     """

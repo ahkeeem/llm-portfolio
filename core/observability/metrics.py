@@ -124,7 +124,6 @@ metrics = MetricsCollector()
 def track_endpoint(endpoint_name: str):
     """Decorator to track request count, latency, and errors for an endpoint."""
     def decorator(fn):
-        import asyncio
         import inspect
 
         if inspect.iscoroutinefunction(fn):
