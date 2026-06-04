@@ -20,6 +20,10 @@ groq_key = os.getenv("GROQ_API_KEY")
 groq_base = os.getenv("GROQ_API_BASE")
 openai_key = os.getenv("OPENAI_API_KEY")
 
+client = None
+DEFAULT_MODEL = "llama-3.1-8b-instant"
+PROVIDER = "mock"
+
 if groq_key and groq_base:
     client = OpenAI(api_key=groq_key, base_url=groq_base)
     DEFAULT_MODEL = "llama-3.1-8b-instant"
@@ -28,10 +32,6 @@ elif openai_key:
     client = OpenAI(api_key=openai_key)
     DEFAULT_MODEL = "gpt-4o-mini"
     PROVIDER = "openai"
-else:
-    raise RuntimeError(
-        "No API key found. Set GROQ_API_KEY + GROQ_API_BASE or OPENAI_API_KEY in .env"
-    )
 
 print(f"✅ LLM Provider: {PROVIDER} | Model: {DEFAULT_MODEL}")
 
@@ -138,6 +138,10 @@ def call_llm_structured(prompt: str, response_model: Type[T], model: str = None,
     Call LLM and enforce structured JSON output matching the provided Pydantic model.
     Hardened to handle markdown blocks and potential LLM wrapping.
     """
+    if client is None:
+        raise RuntimeError(
+            "No API key found. Set GROQ_API_KEY + GROQ_API_BASE or OPENAI_API_KEY in .env"
+        )
     system_prompt = _generate_template_instructions(response_model)
 
     response = client.chat.completions.create(
@@ -191,6 +195,10 @@ def call_llm_structured(prompt: str, response_model: Type[T], model: str = None,
 )
 def call_llm(prompt: str, model: str = None, temperature: float = 0.3, project: str = "unknown") -> str:
     """Call LLM with retry-friendly defaults and token tracking."""
+    if client is None:
+        raise RuntimeError(
+            "No API key found. Set GROQ_API_KEY + GROQ_API_BASE or OPENAI_API_KEY in .env"
+        )
     response = client.chat.completions.create(
         model=model or DEFAULT_MODEL,
         messages=[{"role": "user", "content": prompt}],

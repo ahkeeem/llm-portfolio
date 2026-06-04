@@ -12,6 +12,10 @@ groq_key = os.getenv("GROQ_API_KEY")
 groq_base = os.getenv("GROQ_API_BASE")
 openai_key = os.getenv("OPENAI_API_KEY")
 
+client = None
+DEFAULT_MODEL = "llama-3.1-8b-instant"
+PROVIDER = "mock"
+
 if groq_key and groq_base:
     client = OpenAI(api_key=groq_key, base_url=groq_base)
     DEFAULT_MODEL = "llama-3.1-8b-instant"
@@ -20,8 +24,6 @@ elif openai_key:
     client = OpenAI(api_key=openai_key)
     DEFAULT_MODEL = "gpt-4o-mini"
     PROVIDER = "openai"
-else:
-    raise RuntimeError("No API key found in .env")
 
 print(f"✅ LLM Provider: {PROVIDER} | Model: {DEFAULT_MODEL}")
 
@@ -29,6 +31,8 @@ print(f"✅ LLM Provider: {PROVIDER} | Model: {DEFAULT_MODEL}")
 @retry(wait=wait_exponential(multiplier=1, min=2, max=10), stop=stop_after_attempt(3))
 def call_llm(prompt: str, model: str = None, temperature: float = 0.2) -> str:
     """Call LLM with retry-friendly defaults and token tracking."""
+    if client is None:
+        raise RuntimeError("No API key found in .env")
     response = client.chat.completions.create(
         model=model or DEFAULT_MODEL,
         messages=[{"role": "user", "content": prompt}],
