@@ -2,7 +2,6 @@
 Evaluation metrics for receipt field extraction.
 """
 
-import json
 
 
 def field_f1(predicted: dict, ground_truth: dict) -> dict:

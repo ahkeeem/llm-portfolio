@@ -1,5 +1,4 @@
 import urllib.request
-import os
 import zipfile
 
 url = "https://zenodo.org/record/4595826/files/CUAD_v1.zip?download=1"

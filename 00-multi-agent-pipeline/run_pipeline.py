@@ -5,7 +5,6 @@ import os
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
 from core.graph import create_pipeline
-from app.state import AgentState
 
 def run_demo():
     print("==================================================")

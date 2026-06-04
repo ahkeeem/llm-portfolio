@@ -7,7 +7,7 @@ gated behind langgraph availability.
 import sys
 import os
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 # Ensure the 00-multi-agent-pipeline root is on the path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))

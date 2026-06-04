@@ -4,7 +4,6 @@ LoRA fine-tuning logic for receipt field extraction.
 Uses HuggingFace PEFT to add LoRA adapters to a base model.
 """
 
-import os
 
 
 def get_training_config() -> dict:

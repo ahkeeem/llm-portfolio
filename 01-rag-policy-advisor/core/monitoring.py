@@ -10,6 +10,7 @@ import time
 import threading
 from datetime import datetime
 from functools import wraps
+from typing import Any
 
 
 class MetricsCollector:
