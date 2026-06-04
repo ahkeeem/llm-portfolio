@@ -2,6 +2,9 @@
 Evaluation Workflow: LLM-as-a-Judge RAG quality evaluation.
 Uses the centralized LLM runtime so all token usage is tracked in real metrics.
 """
+import json
+import os
+
 from core.runtime.base_agent import BaseWorkflow
 from core.schemas.state import AgentState
 from core.runtime.llm import call_llm_structured
@@ -17,8 +20,6 @@ class EvalScore(BaseModel):
     reasoning: str = ""
 
 
-import json
-import os
 
 _PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 _QA_PAIRS_PATH = os.path.join(_PROJECT_ROOT, "data", "samples", "qa_pairs.json")
@@ -38,7 +39,7 @@ def _load_qa_pairs() -> list[dict]:
                 ]
     except Exception:
         pass
-    
+
     # Fallback to standard QA pairs from the UK AI regulation whitepapers if loading fails
     return [
         {

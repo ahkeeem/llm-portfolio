@@ -14,7 +14,6 @@ SQLite connection so it is safe to use in a multi-threaded web server.
 import sqlite3
 import csv
 import os
-import io
 import logging
 from typing import Dict, List, Any, Tuple
 
