@@ -47,6 +47,7 @@ datasets/**/processed/*
 !datasets/**/processed/.gitkeep
 *.zip
 *.csv
+!data/samples/*.csv
 *.sqlite
 *.db
 
