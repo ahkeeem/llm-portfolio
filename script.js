@@ -298,6 +298,10 @@ function switchDemo(type) {
     // Ensure the main wrapper is visible
     const wrapper = document.getElementById("demoContent");
     if (wrapper) wrapper.style.display = "block";
+
+    if (type === "bi") {
+        initGenieSpace();
+    }
 }
 
 // === RAG Demo ===
@@ -563,52 +567,82 @@ function resetGenieSession() {
     }
 }
 
-// -- Dataset Viewer --------------------------------------------------
+// -- Schema Sidebar Exploration --------------------------------------
 
-async function toggleGenieDatasetViewer() {
-    const viewer = document.getElementById("genieSidebar");
-    const isHidden = viewer.style.display === "none";
-    viewer.style.display = isHidden ? "block" : "none";
+async function initGenieSpace() {
+    if (genieSchemaCache) return;
 
-    if (isHidden && !genieSchemaCache) {
-        try {
-            const res = await fetch(`${API_URLS.control_plane}/api/v1/bi-schema`);
-            if (res.ok) {
-                const data = await res.json();
-                genieSchemaCache = data;
-                // Show schema summary
-                const schemaDesc = Object.entries(data.schema || {})
-                    .map(([t, cols]) => `<strong>${t}</strong>: ${cols.join(", ")}`)
-                    .join("<br>");
-                document.getElementById("genieSchemaInfo").innerHTML = schemaDesc;
-                // Load first table preview by default
-                const firstTable = Object.keys(data.schema || {})[0];
-                if (firstTable) loadGenieTablePreview(firstTable, data.previews);
+    const schemaInfo = document.getElementById("genieSchemaInfo");
+    const tableList = document.getElementById("genieTableList");
+    if (schemaInfo) schemaInfo.textContent = "Loading schema…";
+
+    try {
+        const res = await fetch(`${API_URLS.control_plane}/api/v1/bi-schema`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        genieSchemaCache = data;
+
+        if (tableList) {
+            tableList.innerHTML = "";
+            const schema = data.schema || {};
+            for (const [tableName, columns] of Object.entries(schema)) {
+                // Table item
+                const li = document.createElement("li");
+                li.className = "genie-table-item";
+                
+                // Get record count if available in previews
+                const rows = data.previews?.[tableName]?.rows?.length || 0;
+                const rowBadge = rows > 0 ? `<span class="genie-badge" style="font-size:0.75rem; background:rgba(99,102,241,0.2); color:var(--accent-blue); padding:2px 6px; border-radius:10px; margin-left:8px;">${rows}+ rows</span>` : "";
+                
+                // Create table header collapse toggle
+                li.innerHTML = `
+                    <div class="genie-table-header" onclick="toggleGenieTableSchema('${tableName}')" style="cursor: pointer; display: flex; align-items: center; padding: 6px 8px; border-radius: var(--radius-sm); transition: background 0.2s;">
+                        <span class="genie-table-icon" style="margin-right: 8px;">📂</span>
+                        <span class="genie-table-name" style="font-weight: 500; color: var(--text-primary); font-size: 0.9rem;">${tableName}</span>
+                        ${rowBadge}
+                    </div>
+                    <ul class="genie-column-list" id="genieColList-${tableName}" style="display: none; list-style: none; padding-left: 24px; margin-top: 4px; margin-bottom: 8px;">
+                        ${columns.map(col => `
+                            <li style="display: flex; align-items: center; gap: 6px; padding: 3px 0; color: var(--text-muted); font-size: 0.82rem;">
+                                <span class="genie-col-icon" style="opacity: 0.5;">#</span>
+                                <span class="genie-col-name">${col}</span>
+                            </li>
+                        `).join("")}
+                    </ul>
+                `;
+                
+                // Hover effect for table header
+                const header = li.querySelector(".genie-table-header");
+                header.addEventListener("mouseenter", () => header.style.background = "rgba(255,255,255,0.04)");
+                header.addEventListener("mouseleave", () => header.style.background = "transparent");
+
+                tableList.appendChild(li);
             }
-        } catch (err) {
-            document.getElementById("genieSchemaInfo").textContent = "Could not load schema: " + err.message;
+        }
+        if (schemaInfo) schemaInfo.style.display = "none";
+    } catch (err) {
+        if (schemaInfo) schemaInfo.textContent = "Failed to load schema: " + err.message;
+    }
+}
+
+function toggleGenieTableSchema(tableName) {
+    const list = document.getElementById(`genieColList-${tableName}`);
+    if (list) {
+        const isHidden = list.style.display === "none";
+        list.style.display = isHidden ? "block" : "none";
+        const header = list.previousElementSibling;
+        if (header) {
+            const icon = header.querySelector(".genie-table-icon");
+            if (icon) icon.textContent = isHidden ? "📁" : "📂";
         }
     }
 }
 
-function loadGenieTablePreview(tableName, previewData) {
-    const data = previewData || (genieSchemaCache && genieSchemaCache.previews);
-    if (!data || !data[tableName]) return;
-
-    const { columns, rows } = data[tableName];
-    const thead = document.getElementById("geniePreviewHead");
-    const tbody = document.getElementById("geniePreviewBody");
-
-    thead.innerHTML = `<tr>${columns.map(c => `<th>${c}</th>`).join("")}</tr>`;
-    tbody.innerHTML = rows.map(r =>
-        `<tr>${r.map(v => `<td title="${v || ''}">${v || "—"}</td>`).join("")}</tr>`
-    ).join("");
-
-    // Highlight active button
-    ["sec_filings", "transactions"].forEach(name => {
-        const btn = document.getElementById(`btnTable${name.split("_").map(w => w[0].toUpperCase() + w.slice(1)).join("")}`);
-        if (btn) btn.style.background = name === tableName ? "rgba(99,102,241,0.25)" : "";
-    });
+function toggleGenieSidebar() {
+    const sidebar = document.getElementById("genieSidebar");
+    if (sidebar) {
+        sidebar.classList.toggle("open");
+    }
 }
 
 // -- Keyboard: Enter sends, Shift+Enter newline ----------------------
@@ -669,7 +703,7 @@ async function sendGenieChat() {
             appendGenieErrorMessage(data.generated_sql || "", errMsg);
             genieHistory.push({ role: "assistant", content: `Error: ${errMsg}` });
         } else {
-            appendGenieResultMessage(data);
+            appendGenieResultMessage(data, question);
             genieHistory.push({ role: "assistant", content: data.summary || "" });
         }
 
@@ -699,7 +733,7 @@ function appendGenieMessage(role, text) {
     container.style.display = "block";
 }
 
-function appendGenieResultMessage(data) {
+function appendGenieResultMessage(data, question) {
     const container = document.getElementById("genieMessages");
     const msgId = "genieMsg" + Date.now();
     const chartId = "genieChart" + Date.now();
@@ -707,7 +741,9 @@ function appendGenieResultMessage(data) {
     // Build table HTML
     let tableHtml = "";
     if (data.columns && data.columns.length > 0) {
-        const headerCells = data.columns.map(c => `<th>${escapeHtml(c)}</th>`).join("");
+        const headerCells = data.columns.map((c, idx) => 
+            `<th onclick="sortGenieTable('${msgId}', ${idx})" style="cursor: pointer; user-select: none;" title="Click to sort">${escapeHtml(c)} ↕</th>`
+        ).join("");
         const bodyRows = (data.rows || []).map(row =>
             `<tr>${row.map(v => `<td title="${escapeHtml(String(v || ''))}">${escapeHtml(String(v ?? "—"))}</td>`).join("")}</tr>`
         ).join("");
@@ -727,6 +763,9 @@ function appendGenieResultMessage(data) {
         chartHtml = `<div class="genie-chart-wrap"><canvas id="${chartId}"></canvas></div>`;
     }
 
+    // Generate context-aware follow-ups
+    const followUpsHtml = generateFollowUps(question || "", data);
+
     const div = document.createElement("div");
     div.className = "genie-msg genie-msg-agent";
     div.id = msgId;
@@ -738,6 +777,7 @@ function appendGenieResultMessage(data) {
             <div class="genie-summary">${escapeHtml(data.summary || "")}</div>
             ${tableHtml}
             ${chartHtml}
+            ${followUpsHtml}
         </div>
     `;
     container.appendChild(div);
@@ -813,6 +853,81 @@ function renderGenieChart(canvasId, config) {
         genieChartInstance.destroy();
     }
     genieChartInstance = new Chart(canvas, chartConfig);
+}
+
+// -- Follow-up and Sorting Helpers -----------------------------------
+
+function generateFollowUps(question, data) {
+    const qLower = question.toLowerCase();
+    const suggestions = [];
+
+    if (qLower.includes("transaction") || qLower.includes("fraud") || qLower.includes("class")) {
+        suggestions.push("Compare average transaction amount for fraud vs non-fraud cases");
+        suggestions.push("Show details of the top 5 largest fraud transactions");
+        suggestions.push("Show transaction count by class");
+    } else if (qLower.includes("sec") || qLower.includes("filing") || qLower.includes("form") || qLower.includes("ticker") || qLower.includes("symbol")) {
+        suggestions.push("Show the trend of SEC filings filed by year");
+        suggestions.push("Which ticker symbol has the most SEC filings?");
+        suggestions.push("List the unique forms filed by symbol 'TSLA'");
+    } else {
+        suggestions.push("Show summary statistics of this dataset");
+        suggestions.push("Can you plot this data as a line chart?");
+    }
+
+    if (suggestions.length === 0) return "";
+    
+    return `
+        <div class="genie-followups">
+            ${suggestions.map(s => `<span class="genie-followup-chip" onclick="sendGenieQuestion('${escapeHtml(s)}')">${escapeHtml(s)}</span>`).join("")}
+        </div>
+    `;
+}
+
+let sortDirections = {}; // Cache to keep track of sort direction for each message and column index
+
+function sortGenieTable(msgId, colIdx) {
+    const msgDiv = document.getElementById(msgId);
+    if (!msgDiv) return;
+    const table = msgDiv.querySelector(".genie-results-table");
+    if (!table) return;
+    const tbody = table.querySelector("tbody");
+    if (!tbody) return;
+    const rows = Array.from(tbody.querySelectorAll("tr"));
+
+    // Toggle direction
+    const sortKey = `${msgId}-${colIdx}`;
+    const desc = !sortDirections[sortKey];
+    sortDirections[sortKey] = desc;
+
+    // Sort rows
+    rows.sort((a, b) => {
+        const aVal = a.cells[colIdx].textContent.trim();
+        const bVal = b.cells[colIdx].textContent.trim();
+        
+        // Try numerical sort
+        const aNum = parseFloat(aVal.replace(/,/g, ""));
+        const bNum = parseFloat(bVal.replace(/,/g, ""));
+        if (!isNaN(aNum) && !isNaN(bNum)) {
+            return desc ? bNum - aNum : aNum - bNum;
+        }
+        
+        // Fallback string sort
+        return desc ? bVal.localeCompare(aVal) : aVal.localeCompare(bVal);
+    });
+
+    // Re-append rows in sorted order
+    rows.forEach(row => tbody.appendChild(row));
+
+    // Update header icons for visual feedback
+    const headers = table.querySelectorAll("th");
+    headers.forEach((th, idx) => {
+        const baseText = th.textContent.replace(/[↕▲▼]/g, "").trim();
+        if (idx === colIdx) {
+            th.textContent = baseText + (desc ? " ▼" : " ▲");
+        } else {
+            th.textContent = baseText + " ↕";
+        }
+    });
 }
 
 function escapeHtml(str) {
