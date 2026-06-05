@@ -535,48 +535,69 @@ function resetReceiptDemo() {
 }
 
 // ===================================================================
-// BI CHAT — Conversational SQL Agent
+// GENIE DATA ROOM — Conversational Data Agent
 // ===================================================================
 
-let biHistory = [];         // conversation history [{role, content}]
-let biChartInstance = null; // current Chart.js instance
-let biSchemaCache = null;   // cached schema from /api/v1/bi-schema
+let genieHistory = [];         // conversation history [{role, content}]
+let genieChartInstance = null; // current Chart.js instance
+let genieSchemaCache = null;   // cached schema from /api/v1/bi-schema
+
+// -- Reset session ---------------------------------------------------
+function resetGenieSession() {
+    genieHistory = [];
+    if (genieChartInstance) {
+        genieChartInstance.destroy();
+        genieChartInstance = null;
+    }
+    const messages = document.getElementById("genieMessages");
+    if (messages) {
+        messages.innerHTML = "";
+        messages.style.display = "none";
+    }
+    const welcome = document.getElementById("genieWelcome");
+    if (welcome) welcome.style.display = "block";
+    const input = document.getElementById("genieInput");
+    if (input) {
+        input.value = "";
+        input.style.height = "44px";
+    }
+}
 
 // -- Dataset Viewer --------------------------------------------------
 
-async function toggleDatasetViewer() {
-    const viewer = document.getElementById("biDatasetViewer");
+async function toggleGenieDatasetViewer() {
+    const viewer = document.getElementById("genieSidebar");
     const isHidden = viewer.style.display === "none";
     viewer.style.display = isHidden ? "block" : "none";
 
-    if (isHidden && !biSchemaCache) {
+    if (isHidden && !genieSchemaCache) {
         try {
             const res = await fetch(`${API_URLS.control_plane}/api/v1/bi-schema`);
             if (res.ok) {
                 const data = await res.json();
-                biSchemaCache = data;
+                genieSchemaCache = data;
                 // Show schema summary
                 const schemaDesc = Object.entries(data.schema || {})
                     .map(([t, cols]) => `<strong>${t}</strong>: ${cols.join(", ")}`)
                     .join("<br>");
-                document.getElementById("biSchemaInfo").innerHTML = schemaDesc;
+                document.getElementById("genieSchemaInfo").innerHTML = schemaDesc;
                 // Load first table preview by default
                 const firstTable = Object.keys(data.schema || {})[0];
-                if (firstTable) loadTablePreview(firstTable, data.previews);
+                if (firstTable) loadGenieTablePreview(firstTable, data.previews);
             }
         } catch (err) {
-            document.getElementById("biSchemaInfo").textContent = "Could not load schema: " + err.message;
+            document.getElementById("genieSchemaInfo").textContent = "Could not load schema: " + err.message;
         }
     }
 }
 
-function loadTablePreview(tableName, previewData) {
-    const data = previewData || (biSchemaCache && biSchemaCache.previews);
+function loadGenieTablePreview(tableName, previewData) {
+    const data = previewData || (genieSchemaCache && genieSchemaCache.previews);
     if (!data || !data[tableName]) return;
 
     const { columns, rows } = data[tableName];
-    const thead = document.getElementById("biPreviewHead");
-    const tbody = document.getElementById("biPreviewBody");
+    const thead = document.getElementById("geniePreviewHead");
+    const tbody = document.getElementById("geniePreviewBody");
 
     thead.innerHTML = `<tr>${columns.map(c => `<th>${c}</th>`).join("")}</tr>`;
     tbody.innerHTML = rows.map(r =>
@@ -592,42 +613,42 @@ function loadTablePreview(tableName, previewData) {
 
 // -- Keyboard: Enter sends, Shift+Enter newline ----------------------
 
-function biInputKeydown(e) {
+function genieInputKeydown(e) {
     if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
-        sendBiChat();
+        sendGenieChat();
     }
 }
 
 // -- Quick question buttons ------------------------------------------
 
-function sendBiQuestion(text) {
-    document.getElementById("biInput").value = text;
-    sendBiChat();
+function sendGenieQuestion(text) {
+    document.getElementById("genieInput").value = text;
+    sendGenieChat();
 }
 
 // -- Core send -------------------------------------------------------
 
-async function sendBiChat() {
-    const input = document.getElementById("biInput");
+async function sendGenieChat() {
+    const input = document.getElementById("genieInput");
     const question = input.value.trim();
     if (!question) return;
 
     input.value = "";
     input.style.height = "44px";
 
-    // Hide placeholder, show messages
-    document.getElementById("biChatPlaceholder").style.display = "none";
+    // Hide welcome, show messages
+    document.getElementById("genieWelcome").style.display = "none";
 
     // Append user bubble
-    appendBiMessage("user", question);
+    appendGenieMessage("user", question);
 
     // Disable send button, show loading
-    document.getElementById("biSendBtn").disabled = true;
-    document.getElementById("biLoading").style.display = "block";
+    document.getElementById("genieSendBtn").disabled = true;
+    document.getElementById("genieThinking").style.display = "block";
 
     // Add to history
-    biHistory.push({ role: "user", content: question });
+    genieHistory.push({ role: "user", content: question });
 
     try {
         const res = await fetch(`${API_URLS.control_plane}/api/v1/bi-chat`, {
@@ -635,52 +656,53 @@ async function sendBiChat() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 question,
-                session_id: "bi-" + Date.now(),
-                history: biHistory.slice(-8)  // last 4 turns
+                session_id: "genie-" + Date.now(),
+                history: genieHistory.slice(-8)  // last 4 turns
             })
         });
 
         const data = await res.json();
-        document.getElementById("biLoading").style.display = "none";
+        document.getElementById("genieThinking").style.display = "none";
 
         if (!res.ok || data.status === "error") {
             const errMsg = data.error || data.detail || `HTTP ${res.status}`;
-            appendBiErrorMessage(data.generated_sql || "", errMsg);
-            biHistory.push({ role: "assistant", content: `Error: ${errMsg}` });
+            appendGenieErrorMessage(data.generated_sql || "", errMsg);
+            genieHistory.push({ role: "assistant", content: `Error: ${errMsg}` });
         } else {
-            appendBiResultMessage(data);
-            biHistory.push({ role: "assistant", content: data.summary || "" });
+            appendGenieResultMessage(data);
+            genieHistory.push({ role: "assistant", content: data.summary || "" });
         }
 
     } catch (err) {
-        document.getElementById("biLoading").style.display = "none";
-        appendBiErrorMessage("", err.message);
+        document.getElementById("genieThinking").style.display = "none";
+        appendGenieErrorMessage("", err.message);
     }
 
-    document.getElementById("biSendBtn").disabled = false;
+    document.getElementById("genieSendBtn").disabled = false;
     // Auto-scroll chat window
-    const win = document.getElementById("biChatWindow");
-    win.scrollTop = win.scrollHeight;
+    const win = document.getElementById("genieMessages");
+    if (win) win.scrollTop = win.scrollHeight;
 }
 
 // -- Render helpers --------------------------------------------------
 
-function appendBiMessage(role, text) {
-    const container = document.getElementById("biMessages");
+function appendGenieMessage(role, text) {
+    const container = document.getElementById("genieMessages");
     const div = document.createElement("div");
-    div.className = `bi-msg bi-msg-${role}`;
-    const label = role === "user" ? "You" : "BI Agent";
+    div.className = `genie-msg genie-msg-${role}`;
+    const label = role === "user" ? "You" : "Genie Agent";
     div.innerHTML = `
-        <div class="bi-msg-label">${label}</div>
-        <div class="bi-bubble-${role}">${escapeHtml(text)}</div>
+        <div class="genie-msg-label">${label}</div>
+        <div class="genie-bubble-${role}">${escapeHtml(text)}</div>
     `;
     container.appendChild(div);
+    container.style.display = "block";
 }
 
-function appendBiResultMessage(data) {
-    const container = document.getElementById("biMessages");
-    const msgId = "biMsg" + Date.now();
-    const chartId = "biChart" + Date.now();
+function appendGenieResultMessage(data) {
+    const container = document.getElementById("genieMessages");
+    const msgId = "genieMsg" + Date.now();
+    const chartId = "genieChart" + Date.now();
 
     // Build table HTML
     let tableHtml = "";
@@ -690,9 +712,9 @@ function appendBiResultMessage(data) {
             `<tr>${row.map(v => `<td title="${escapeHtml(String(v || ''))}">${escapeHtml(String(v ?? "—"))}</td>`).join("")}</tr>`
         ).join("");
         tableHtml = `
-            <div class="bi-row-count">${data.row_count || data.rows?.length || 0} row(s) returned</div>
-            <div class="bi-results-table-wrap">
-                <table class="bi-results-table">
+            <div class="genie-row-count">${data.row_count || data.rows?.length || 0} row(s) returned</div>
+            <div class="genie-results-table-wrap">
+                <table class="genie-results-table">
                     <thead><tr>${headerCells}</tr></thead>
                     <tbody>${bodyRows}</tbody>
                 </table>
@@ -702,45 +724,47 @@ function appendBiResultMessage(data) {
     // Build chart HTML placeholder
     let chartHtml = "";
     if (data.chart_config && data.chart_config.labels && data.chart_config.labels.length > 0) {
-        chartHtml = `<div class="bi-chart-wrap"><canvas id="${chartId}"></canvas></div>`;
+        chartHtml = `<div class="genie-chart-wrap"><canvas id="${chartId}"></canvas></div>`;
     }
 
     const div = document.createElement("div");
-    div.className = "bi-msg bi-msg-agent";
+    div.className = "genie-msg genie-msg-agent";
     div.id = msgId;
     div.innerHTML = `
-        <div class="bi-msg-label">BI Agent</div>
-        <div class="bi-bubble-agent">
-            <div class="bi-sql-label">Generated SQL</div>
-            <pre class="bi-sql-block">${escapeHtml(data.generated_sql || "")}</pre>
-            <div class="bi-summary">${escapeHtml(data.summary || "")}</div>
+        <div class="genie-msg-label">Genie Agent</div>
+        <div class="genie-bubble-agent">
+            <div class="genie-sql-label">Generated SQL</div>
+            <pre class="genie-sql-block">${escapeHtml(data.generated_sql || "")}</pre>
+            <div class="genie-summary">${escapeHtml(data.summary || "")}</div>
             ${tableHtml}
             ${chartHtml}
         </div>
     `;
     container.appendChild(div);
+    container.style.display = "block";
 
     // Render chart after DOM insertion
     if (chartHtml && data.chart_config) {
-        requestAnimationFrame(() => renderBiChart(chartId, data.chart_config));
+        requestAnimationFrame(() => renderGenieChart(chartId, data.chart_config));
     }
 }
 
-function appendBiErrorMessage(sql, errMsg) {
-    const container = document.getElementById("biMessages");
+function appendGenieErrorMessage(sql, errMsg) {
+    const container = document.getElementById("genieMessages");
     const div = document.createElement("div");
-    div.className = "bi-msg bi-msg-agent";
+    div.className = "genie-msg genie-msg-agent";
     div.innerHTML = `
-        <div class="bi-msg-label">BI Agent</div>
-        <div class="bi-bubble-agent">
-            ${sql ? `<div class="bi-sql-label">Generated SQL</div><pre class="bi-sql-block">${escapeHtml(sql)}</pre>` : ""}
-            <div class="bi-error-msg">⚠️ ${escapeHtml(errMsg)}</div>
+        <div class="genie-msg-label">Genie Agent</div>
+        <div class="genie-bubble-agent">
+            ${sql ? `<div class="genie-sql-label">Generated SQL</div><pre class="genie-sql-block">${escapeHtml(sql)}</pre>` : ""}
+            <div class="genie-error-msg">⚠️ ${escapeHtml(errMsg)}</div>
         </div>
     `;
     container.appendChild(div);
+    container.style.display = "block";
 }
 
-function renderBiChart(canvasId, config) {
+function renderGenieChart(canvasId, config) {
     const canvas = document.getElementById(canvasId);
     if (!canvas) return;
     if (typeof Chart === "undefined") return;
@@ -785,10 +809,10 @@ function renderBiChart(canvasId, config) {
     };
 
     // Destroy existing chart instance to prevent memory leaks
-    if (biChartInstance) {
-        biChartInstance.destroy();
+    if (genieChartInstance) {
+        genieChartInstance.destroy();
     }
-    biChartInstance = new Chart(canvas, chartConfig);
+    genieChartInstance = new Chart(canvas, chartConfig);
 }
 
 function escapeHtml(str) {

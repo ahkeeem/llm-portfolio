@@ -578,68 +578,60 @@ Example: Dear support team, I've been waiting 3 weeks for my refund of $450. Thi
 
                 </div>
 
-                    <!-- BI Chat Demo -->
+                    <!-- Genie Data Room Demo -->
                     <div class="project-demo-section" id="demo-bi" style="display:none;">
-                        <!-- Header with dataset viewer toggle -->
-                        <div class="demo-step" id="biStep1">
-                            <div class="step-header" style="justify-content: space-between; align-items: center;">
-                                <div style="display:flex; align-items:center; gap:12px;">
-                                    <div class="step-badge" style="background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));">BI Chat</div>
-                                    <h3 style="margin:0;">Conversational Data Query</h3>
-                                </div>
-                                <button class="btn btn-secondary" style="font-size:0.8rem; padding:6px 14px;" onclick="toggleDatasetViewer()">📋 View Dataset</button>
-                            </div>
+                        <div class="genie-container">
+                            <!-- Sidebar – Schema Explorer -->
+                            <aside class="genie-sidebar" id="genieSidebar">
+                                <h4>📋 Dataset Explorer</h4>
+                                <ul class="genie-table-list" id="genieTableList">
+                                    <!-- Populated by JS on first open -->
+                                </ul>
+                                <div id="genieSchemaInfo" class="genie-row-count">Loading schema…</div>
+                            </aside>
 
-                            <!-- Dataset Viewer (collapsible) -->
-                            <div id="biDatasetViewer" style="display:none; margin-top:16px;">
-                                <div class="result-card" style="padding:16px;">
-                                    <div class="result-header" style="margin-bottom:12px;">
-                                        <span class="result-icon">🗄️</span>
-                                        <h4>Available Tables</h4>
-                                        <div style="margin-left:auto; display:flex; gap:8px;">
-                                            <button class="sample-btn" onclick="loadTablePreview('sec_filings')" id="btnTableSecFilings">SEC Filings</button>
-                                            <button class="sample-btn" onclick="loadTablePreview('transactions')" id="btnTableTransactions">Transactions</button>
+                            <!-- Main Panel -->
+                            <section class="genie-main">
+                                <header class="genie-header">
+                                    <h3>Conversational Data Query</h3>
+                                    <button class="genie-new-session" onclick="resetGenieSession()">↻ New Session</button>
+                                </header>
+
+                                <!-- Welcome / Starter Cards -->
+                                <div class="genie-welcome" id="genieWelcome">
+                                    <h2>What would you like to explore?</h2>
+                                    <p style="color:var(--text-muted); font-size:0.9rem; max-width:520px;">Ask a question about the data. The agent generates SQL, runs it against a live SQLite database, and returns tables &amp; charts.</p>
+                                    <div class="genie-starter-grid">
+                                        <div class="genie-question-card" onclick="sendGenieQuestion('Show the top 10 SEC form types by count')">
+                                            <span class="icon">📊</span><span class="text">Top SEC form types</span>
+                                        </div>
+                                        <div class="genie-question-card" onclick="sendGenieQuestion('How many transactions have fraud class = 1?')">
+                                            <span class="icon">⚠️</span><span class="text">Fraud transaction count</span>
+                                        </div>
+                                        <div class="genie-question-card" onclick="sendGenieQuestion('What are the top 5 ticker symbols by number of filings?')">
+                                            <span class="icon">💹</span><span class="text">Top ticker symbols</span>
+                                        </div>
+                                        <div class="genie-question-card" onclick="sendGenieQuestion('Show average transaction amount by fraud class')">
+                                            <span class="icon">📈</span><span class="text">Avg amount by class</span>
                                         </div>
                                     </div>
-                                    <div id="biSchemaInfo" style="font-size:0.78rem; color:var(--text-muted); margin-bottom:10px;">Loading schema…</div>
-                                    <div style="overflow-x:auto; max-height:260px; overflow-y:auto;">
-                                        <table id="biPreviewTable" class="bi-preview-table">
-                                            <thead id="biPreviewHead"></thead>
-                                            <tbody id="biPreviewBody"></tbody>
-                                        </table>
-                                    </div>
                                 </div>
-                            </div>
 
-                            <!-- Chat messages area -->
-                            <div class="bi-chat-window" id="biChatWindow">
-                                <div class="bi-chat-placeholder" id="biChatPlaceholder">
-                                    <div style="font-size:2rem; margin-bottom:8px;">🗃️</div>
-                                    <p style="color:var(--text-muted); font-size:0.9rem;">Ask a question about the data. The agent will generate SQL, run it, and show you a table and chart.</p>
-                                    <div class="bi-quick-questions">
-                                        <button class="sample-btn" onclick="sendBiQuestion('Show the top 10 SEC form types by count')">Top form types</button>
-                                        <button class="sample-btn" onclick="sendBiQuestion('How many transactions have fraud class = 1?')">Fraud count</button>
-                                        <button class="sample-btn" onclick="sendBiQuestion('What are the top 5 ticker symbols by number of filings?')">Top tickers</button>
-                                        <button class="sample-btn" onclick="sendBiQuestion('Show average transaction amount by fraud class')">Avg amount by class</button>
-                                    </div>
+                                <!-- Message Thread -->
+                                <div class="genie-messages" id="genieMessages" style="display:none;"></div>
+
+                                <!-- Thinking Indicator (inline) -->
+                                <div class="genie-thinking" id="genieThinking" style="display:none;">
+                                    <div class="genie-loader"></div>
+                                    <span>Generating SQL &amp; querying data…</span>
                                 </div>
-                                <div class="bi-messages" id="biMessages"></div>
-                            </div>
 
-                            <!-- Input bar -->
-                            <div class="bi-input-bar">
-                                <textarea id="biInput" class="bi-textarea" rows="1" placeholder="e.g. Show me the top 5 form types filed this year…" onkeydown="biInputKeydown(event)"></textarea>
-                                <button class="btn btn-primary" id="biSendBtn" onclick="sendBiChat()" style="padding: 10px 20px;">
-                                    <span id="biSendIcon">▶</span>
-                                </button>
-                            </div>
-
-                            <!-- Loading state -->
-                            <div class="demo-loading" id="biLoading" style="display:none; margin-top:16px;">
-                                <div class="loader"></div>
-                                <p>Generating SQL &amp; querying data…</p>
-                                <span class="loading-detail">LLM → SQL → SQLite → Chart</span>
-                            </div>
+                                <!-- Input Bar -->
+                                <div class="genie-input-bar">
+                                    <textarea id="genieInput" placeholder="Ask a question about the data…" rows="1" onkeydown="genieInputKeydown(event)"></textarea>
+                                    <button id="genieSendBtn" onclick="sendGenieChat()">Send</button>
+                                </div>
+                            </section>
                         </div>
                     </div>
 
