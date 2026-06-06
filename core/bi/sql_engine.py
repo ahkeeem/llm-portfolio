@@ -65,11 +65,38 @@ def get_schema() -> Dict[str, List[str]]:
                 for c in (reader.fieldnames or [])
             ]
             schema[table_name] = cols
+
+    # Add movies table from sqlite if it exists
+    movies_db_path = os.path.join(_PROJECT_ROOT, "data", "movies_2025_26.db")
+    if os.path.exists(movies_db_path):
+        try:
+            m_conn = sqlite3.connect(movies_db_path)
+            cur = m_conn.execute("PRAGMA table_info(movies)")
+            cols = [row[1] for row in cur.fetchall()]
+            if cols:
+                schema["movies"] = cols
+            m_conn.close()
+        except Exception:
+            pass
+
     return schema
 
 
 def get_preview(table_name: str, n_rows: int = 10) -> Tuple[List[str], List[List[Any]]]:
     """Return (columns, rows) preview for the dataset viewer."""
+    if table_name == "movies":
+        movies_db_path = os.path.join(_PROJECT_ROOT, "data", "movies_2025_26.db")
+        if os.path.exists(movies_db_path):
+            conn = sqlite3.connect(movies_db_path)
+            try:
+                cur = conn.execute(f'SELECT * FROM movies LIMIT {n_rows}')
+                columns = [desc[0] for desc in cur.description] if cur.description else []
+                rows = [list(r) for r in cur.fetchall()]
+                return columns, rows
+            finally:
+                conn.close()
+        return [], []
+
     csv_file = TABLE_REGISTRY.get(table_name)
     if not csv_file:
         return [], []
@@ -103,6 +130,13 @@ def execute_query(sql: str, max_rows: int = 200) -> Tuple[List[str], List[List[A
             path = os.path.join(_SAMPLES_DIR, csv_file)
             if os.path.exists(path):
                 _load_csv_to_sqlite(conn, table_name, path)
+
+        # Attach and copy movies table from sqlite db if it exists
+        movies_db_path = os.path.join(_PROJECT_ROOT, "data", "movies_2025_26.db")
+        if os.path.exists(movies_db_path):
+            conn.execute(f"ATTACH DATABASE '{movies_db_path}' AS movies_db")
+            conn.execute("CREATE TABLE movies AS SELECT * FROM movies_db.movies")
+            conn.execute("DETACH DATABASE movies_db")
 
         # Safety: only allow SELECT statements
         sql_stripped = sql.strip().lstrip(";").strip()
