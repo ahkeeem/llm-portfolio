@@ -26,7 +26,7 @@ def fetch_tmdb_data(api_key=None):
         "sort_by": "popularity.desc",
         "page": 1
     }
-    
+
     movies = []
     for page in range(1, 4):
         params["page"] = page
@@ -34,13 +34,13 @@ def fetch_tmdb_data(api_key=None):
         if response.status_code != 200:
             print(f"Failed to fetch page {page}: {response.text}")
             break
-            
+
         data = response.json()
         movies.extend(data.get("results", []))
-        
+
         if page >= data.get("total_pages", 1):
             break
-            
+
     return movies
 
 # 3. Optimize Storage & 4. Sanitize
@@ -49,7 +49,7 @@ def save_to_sqlite(movies, db_name="movies_2025_26.db"):
     db_path = os.path.join(os.path.dirname(__file__), "..", "data", db_name)
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    
+
     # Create table with proper DATE format
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS movies (
@@ -62,10 +62,10 @@ def save_to_sqlite(movies, db_name="movies_2025_26.db"):
             overview TEXT
         )
     """)
-    
+
     # Clear existing data just in case
     cursor.execute("DELETE FROM movies")
-    
+
     # Insert sanitized data
     records_to_insert = []
     for m in movies:
@@ -78,7 +78,7 @@ def save_to_sqlite(movies, db_name="movies_2025_26.db"):
                 sanitized_date = dt.date()
             except ValueError:
                 sanitized_date = None
-                
+
         # Only insert if date is valid
         if sanitized_date:
             records_to_insert.append((
@@ -90,12 +90,12 @@ def save_to_sqlite(movies, db_name="movies_2025_26.db"):
                 m.get("popularity"),
                 m.get("overview")
             ))
-            
+
     cursor.executemany("""
         INSERT INTO movies (id, title, release_date, vote_average, vote_count, popularity, overview)
         VALUES (?, ?, ?, ?, ?, ?, ?)
     """, records_to_insert)
-    
+
     conn.commit()
     print(f"✅ Successfully inserted {len(records_to_insert)} movies into {db_path}")
     return conn
@@ -104,7 +104,7 @@ def save_to_sqlite(movies, db_name="movies_2025_26.db"):
 def run_validation(conn):
     cursor = conn.cursor()
     print("\n🔍 Validating Data: Top Rated Movie of 2026")
-    
+
     # Leveraging the DATE format we enforced
     query = """
         SELECT title, release_date, vote_average, vote_count
@@ -114,10 +114,10 @@ def run_validation(conn):
         ORDER BY vote_average DESC, vote_count DESC
         LIMIT 1
     """
-    
+
     cursor.execute(query)
     result = cursor.fetchone()
-    
+
     if result:
         print(f"🎬 Top Rated Movie (2026): {result[0]}")
         print(f"📅 Release Date: {result[1]}")
@@ -127,10 +127,10 @@ def run_validation(conn):
 
 if __name__ == "__main__":
     API_KEY = os.environ.get("TMDB_API_KEY")
-        
+
     print("🚀 Starting TMDB ETL Demo...")
     movies_data = fetch_tmdb_data(API_KEY)
-    
+
     if movies_data:
         db_conn = save_to_sqlite(movies_data)
         run_validation(db_conn)
