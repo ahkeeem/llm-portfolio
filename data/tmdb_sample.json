@@ -1,0 +1,70 @@
+{
+  "page": 1,
+  "results": [
+    {
+      "id": 1000001,
+      "title": "Avatar 3: The Seed Bearer",
+      "release_date": "2025-12-19",
+      "vote_average": 8.4,
+      "vote_count": 1520,
+      "popularity": 450.5,
+      "overview": "Jake Sully and Neytiri encounter a new Na'vi clan."
+    },
+    {
+      "id": 1000002,
+      "title": "Avengers: Doomsday",
+      "release_date": "2026-05-01",
+      "vote_average": 8.8,
+      "vote_count": 4200,
+      "popularity": 980.2,
+      "overview": "The Avengers face their greatest threat yet as Doctor Doom emerges."
+    },
+    {
+      "id": 1000003,
+      "title": "The Batman Part II",
+      "release_date": "2026-10-02",
+      "vote_average": 8.5,
+      "vote_count": 3100,
+      "popularity": 750.8,
+      "overview": "Bruce Wayne uncovers a deeper conspiracy in Gotham City."
+    },
+    {
+      "id": 1000004,
+      "title": "Fantastic Four: First Steps",
+      "release_date": "2025-07-25",
+      "vote_average": 7.9,
+      "vote_count": 1850,
+      "popularity": 620.4,
+      "overview": "Marvel's first family embarks on a cosmic adventure."
+    },
+    {
+      "id": 1000005,
+      "title": "Superman",
+      "release_date": "2025-07-11",
+      "vote_average": 8.1,
+      "vote_count": 2200,
+      "popularity": 810.3,
+      "overview": "Clark Kent embraces his heritage and becomes the beacon of hope."
+    },
+    {
+      "id": 1000006,
+      "title": "Old Movie That Shouldn't Be Here",
+      "release_date": "2023-05-10",
+      "vote_average": 6.5,
+      "vote_count": 500,
+      "popularity": 100.0,
+      "overview": "This movie should be filtered out by the SQL."
+    },
+    {
+      "id": 1000007,
+      "title": "Toy Story 5",
+      "release_date": "2026-06-19",
+      "vote_average": 8.2,
+      "vote_count": 2900,
+      "popularity": 550.1,
+      "overview": "Woody and Buzz reunite for a new adventure."
+    }
+  ],
+  "total_pages": 1,
+  "total_results": 7
+}
